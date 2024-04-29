@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 set(executable_name path_creater)
 
@@ -15,9 +16,13 @@ set(library_name ${executable_name}_core)
 
 set(dependencies
   rclcpp
+  geometry_msgs
 )
 
-add_library(${library_name} src/path_creater.cpp)
+add_library(${library_name}
+  src/path_creater.cpp
+  src/curve_math.cpp
+)
 target_include_directories(${library_name} PRIVATE include)
 ament_target_dependencies(${library_name} ${dependencies})
 

@@ -19,6 +19,7 @@
 #define ROBOT_PATH_CREATER__PATH_CREATER_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "robot_path_creater/curve_math.hpp"
 
 namespace path_creater
 {

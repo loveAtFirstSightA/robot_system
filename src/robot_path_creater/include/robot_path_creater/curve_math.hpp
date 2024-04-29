@@ -15,21 +15,27 @@
  */
 
 
-#include "robot_path_creater/path_creater.hpp"
+#ifndef ROBOT_PATH_CREATER__CURVE_MATH__CURVE_MATH_HPP_
+#define ROBOT_PATH_CREATER__CURVE_MATH__CURVE_MATH_HPP_
 
-namespace path_creater
+#include <vector>
+#include <cmath>
+#include "geometry_msgs/msg/vector3.hpp"
+
+namespace robot_path_creater
 {
 
-PathCreater::PathCreater()
-: Node("robot_path_creater")
+class CurveMath
 {
-     RCLCPP_INFO(this->get_logger(), "The robot of Paht-Creater-Unit had been executed");
-}
+public:
+     CurveMath();
+     ~CurveMath();
 
-PathCreater::~PathCreater()
-{
+     std::vector<geometry_msgs::msg::Vector3> line(double start_x, double start_y, double end_x, double end_y, double resolution);
+
+private:
      
-}
 
-
-}  // namespace path_creater
+};
+}  // namespace robot_path_creater
+#endif  // ROBOT_PATH_CREATER__CURVE_MATH__CURVE_MATH_HPP_
