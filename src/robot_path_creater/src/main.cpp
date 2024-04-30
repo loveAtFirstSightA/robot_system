@@ -14,7 +14,6 @@
  limitations under the License.
  */
 
-
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
@@ -23,7 +22,7 @@
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<path_creater::PathCreater>());
+    rclcpp::spin(std::make_shared<robot_path_creater::PathCreater>());
     rclcpp::shutdown();
     return 0;
 }
