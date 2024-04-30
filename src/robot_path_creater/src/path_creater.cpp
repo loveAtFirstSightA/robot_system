@@ -173,7 +173,7 @@ PathCreater::calculateLinePoints(geometry_msgs::msg::Vector3 start, geometry_msg
     geometry_msgs::msg::Vector3 point;
     std::vector<geometry_msgs::msg::Vector3> points;
     geometry_msgs::msg::Vector3 direction = calculateVector(start, end);
-    RCLCPP_INFO(this->get_logger(), "direction [%lf, %lf]", direction.x, direction.y);
+    // RCLCPP_INFO(this->get_logger(), "direction [%lf, %lf]", direction.x, direction.y);
     for (double i = 0; i < 1.0; i += t) {
         point.x = start.x + i * direction.x;
         point.y = start.y + i * direction.y;
