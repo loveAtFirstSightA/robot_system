@@ -23,7 +23,8 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
-#include "robot_msgs/msg/vector3_array.hpp"
+#include "robot_msgs/msg/pose.hpp"
+#include "robot_msgs/msg/pose_array.hpp"
 
 namespace robot_path_creater
 {
@@ -56,7 +57,7 @@ private:
         calculateBezier5Points(geometry_msgs::msg::Vector3 p0, geometry_msgs::msg::Vector3 p1, geometry_msgs::msg::Vector3 p2,
             geometry_msgs::msg::Vector3 p3, geometry_msgs::msg::Vector3 p4, geometry_msgs::msg::Vector3 p5, double t);
     
-    rclcpp::Publisher<robot_msgs::msg::Vector3Array>::SharedPtr path_points_pub_;
+    rclcpp::Publisher<robot_msgs::msg::PoseArray>::SharedPtr path_points_pub_;
 
 };
 }  // namespace robot_path_creater

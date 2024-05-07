@@ -9,7 +9,7 @@
                 "${workspaceFolder}/src/**",
                 "/opt/ros/humble/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/install/robot_msgs/include/robot_msgs"
+                "${workspaceFolder}/install/robot_msgs/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
