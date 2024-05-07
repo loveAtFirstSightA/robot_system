@@ -40,6 +40,10 @@ void PathCreater::initPubSub()
         "cmd_path",
         rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
         std::bind(&PathCreater::cmdSubCallback, this, std::placeholders::_1));
+    
+    path_points_pub_ = this->create_publisher<robot_msgs::msg::Vector3Array>(
+        "path_net_points",
+        rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 }
 
 void PathCreater::cmdSubCallback(const std_msgs::msg::String::SharedPtr msg)
@@ -161,6 +165,14 @@ void PathCreater::timerCallback()
         points.push_back(bezier2[i]);
     }
     displayCurveOnRviz2(points);
+    // 发布路径点
+    auto msg = robot_msgs::msg::Vector3Array();
+    for (size_t i = 0; i < points.size(); i++) {
+        msg.vector3s.push_back(points.at(i));
+    }
+    RCLCPP_INFO(this->get_logger(), "Publishing paths paints size %ld", points.size());
+    path_points_pub_->publish(msg);
+
     timer_->cancel();
 
 }

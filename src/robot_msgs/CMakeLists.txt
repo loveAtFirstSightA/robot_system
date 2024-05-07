@@ -18,6 +18,7 @@ find_package(geometry_msgs REQUIRED)
 
 set(msg_files
   "msg/Demo.msg"
+  "msg/Vector3Array.msg"
 )
 
 set(srv_files
