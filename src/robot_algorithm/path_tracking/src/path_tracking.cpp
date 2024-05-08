@@ -22,6 +22,7 @@ PathTracking::PathTracking()
 : Node("path_tracking")
 {
      RCLCPP_INFO(this->get_logger(), "path_tracking is running...");
+     initSubPub();
 }
 
 PathTracking::~PathTracking()
@@ -29,11 +30,41 @@ PathTracking::~PathTracking()
 
 }
 
+void
+PathTracking::initSubPub()
+{
+     current_pose_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
+          "robot_pose",
+          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
+          std::bind(&PathTracking::currentPoseSubCallback, this, std::placeholders::_1));
+     vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
+          "/bcr_bot/cmd_vel",
+          10);
+     
+     RCLCPP_INFO(this->get_logger(), "All Subscribers Publishers initial successfully");
+}
 
+void
+PathTracking::currentPoseSubCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
+{
+     // 订阅机器人当前的位姿
+     current_pose_ = *msg;
+     static int count;
+     if ( (count ++) == 25000 ) {
+          count = 0;
+          RCLCPP_INFO(this->get_logger(), "current pose [%lf, %lf, %lf]", 
+               current_pose_.vector.x, current_pose_.vector.y, current_pose_.vector.z);
+     }
+}
 
-
-
-
+void
+PathTracking::sendVelocity(double v, double w)
+{
+     auto msg = geometry_msgs::msg::Twist();
+     msg.linear.x = v;
+     msg.angular.z = w;
+     vel_pub_->publish(msg);
+}
 
 
 

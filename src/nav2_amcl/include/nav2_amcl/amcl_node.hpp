@@ -42,8 +42,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
-
-#include "robot_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/vector3_stamped.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -397,9 +396,9 @@ protected:
 private:
   void timerCallback();
 
-  rclcpp_lifecycle::LifecyclePublisher<robot_msgs::msg::Pose>::SharedPtr robot_pose_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr robot_pose_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
-  robot_msgs::msg::Pose current_pose_;
+  geometry_msgs::msg::Vector3Stamped current_pose_;
 
 
 

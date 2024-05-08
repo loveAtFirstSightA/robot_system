@@ -18,6 +18,8 @@
 #define PATH_TRACKING__PATH_TRACKING_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/vector3_stamped.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 namespace path_tracking
 {
@@ -28,8 +30,13 @@ public:
     ~PathTracking();
 
 private:
+    void initSubPub();
+    void currentPoseSubCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
+    void sendVelocity(double v, double w);
 
-
+    rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_sub_;
+    geometry_msgs::msg::Vector3Stamped current_pose_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_pub_;
 
 
 

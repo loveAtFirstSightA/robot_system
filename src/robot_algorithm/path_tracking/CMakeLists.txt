@@ -23,6 +23,10 @@ include_directories(
   include
 )
 
+# 此处不能写成 add_subdirectory(src/*** src/***)
+add_subdirectory(src/math_library)
+add_subdirectory(src/pure_pursuit)
+
 set(executable_name path_tracking)
 
 set(library_name ${executable_name}_core)
@@ -42,6 +46,10 @@ target_include_directories(${executable_name} PRIVATE include)
 ament_target_dependencies(${executable_name} ${dependencies})
 
 target_link_libraries(${executable_name} ${library_name})
+target_link_libraries(${library_name} 
+  math_library_lib
+  pure_pursuit_lib
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -73,7 +81,14 @@ install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 
-ament_export_libraries(${library_name})
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_export_libraries(${library_name}
+  math_library_lib
+  pure_pursuit_lib
+)
 ament_export_dependencies(${dependencies})
 ament_export_include_directories(include)
 ament_package()

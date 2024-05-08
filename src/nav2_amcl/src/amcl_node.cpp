@@ -42,7 +42,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
-#include "robot_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/vector3_stamped.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -979,9 +979,11 @@ AmclNode::publishAmclPose(
     hyps[max_weight_hyp].pf_pose_mean.v[2]);
   
   // 使用另一个话题发布机器人位姿
-  current_pose_.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
-  current_pose_.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
-  current_pose_.yaw = hyps[max_weight_hyp].pf_pose_mean.v[2];
+  current_pose_.header.frame_id = "robot_current_pose";
+  current_pose_.header.stamp = rclcpp::Clock().now();
+  current_pose_.vector.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
+  current_pose_.vector.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
+  current_pose_.vector.z = hyps[max_weight_hyp].pf_pose_mean.v[2];
 }
 
 void
@@ -1544,7 +1546,7 @@ AmclNode::initPubSub()
     map_topic_, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
     std::bind(&AmclNode::mapReceived, this, std::placeholders::_1));
   
-  robot_pose_pub_ = create_publisher<robot_msgs::msg::Pose>(
+  robot_pose_pub_ = create_publisher<geometry_msgs::msg::Vector3Stamped>(
     "robot_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 
@@ -1637,7 +1639,7 @@ AmclNode::initLaserScan()
 void
 AmclNode::timerCallback()
 {
-  auto msg = robot_msgs::msg::Pose();
+  auto msg = geometry_msgs::msg::Vector3Stamped();
   msg = current_pose_;
   robot_pose_pub_->publish(msg);
 }
