@@ -42,6 +42,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
+#include "robot_msgs/msg/pose.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -260,6 +261,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
+  robot_pose_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -305,6 +307,7 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly deactivated
   pose_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
+  robot_pose_pub_->on_deactivate();
 
   // reset dynamic parameter handler
   dyn_params_handler_.reset();
@@ -350,6 +353,7 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   // PubSub
   pose_pub_.reset();
   particle_cloud_pub_.reset();
+  robot_pose_pub_.reset();
 
   // Odometry
   motion_model_.reset();
@@ -973,6 +977,11 @@ AmclNode::publishAmclPose(
     hyps[max_weight_hyp].pf_pose_mean.v[0],
     hyps[max_weight_hyp].pf_pose_mean.v[1],
     hyps[max_weight_hyp].pf_pose_mean.v[2]);
+  
+  // 使用另一个话题发布机器人位姿
+  current_pose_.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
+  current_pose_.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
+  current_pose_.yaw = hyps[max_weight_hyp].pf_pose_mean.v[2];
 }
 
 void
@@ -1534,6 +1543,15 @@ AmclNode::initPubSub()
   map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
     map_topic_, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
     std::bind(&AmclNode::mapReceived, this, std::placeholders::_1));
+  
+  robot_pose_pub_ = create_publisher<robot_msgs::msg::Pose>(
+    "robot_pose",
+    rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+
+  // init timer
+  timer_ = create_wall_timer(
+    std::chrono::microseconds(20),
+    std::bind(&AmclNode::timerCallback, this));
 
   RCLCPP_INFO(get_logger(), "Subscribed to map topic.");
 }
@@ -1614,6 +1632,14 @@ AmclNode::initLaserScan()
 {
   scan_error_count_ = 0;
   last_laser_received_ts_ = rclcpp::Time(0);
+}
+
+void
+AmclNode::timerCallback()
+{
+  auto msg = robot_msgs::msg::Pose();
+  msg = current_pose_;
+  robot_pose_pub_->publish(msg);
 }
 
 }  // namespace nav2_amcl

@@ -43,6 +43,8 @@
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
 
+#include "robot_msgs/msg/pose.hpp"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wreorder"
@@ -391,6 +393,17 @@ protected:
   double z_rand_;
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
+
+private:
+  void timerCallback();
+
+  rclcpp_lifecycle::LifecyclePublisher<robot_msgs::msg::Pose>::SharedPtr robot_pose_pub_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  robot_msgs::msg::Pose current_pose_;
+
+
+
+
 };
 
 }  // namespace nav2_amcl

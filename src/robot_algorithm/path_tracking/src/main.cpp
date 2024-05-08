@@ -17,12 +17,12 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "pure_pursuit/pure_pursuit.hpp"
+#include "path_tracking/path_tracking.hpp"
 
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<path_tracking::PurePursuit>());
+    rclcpp::spin(std::make_shared<path_tracking::PathTracking>());
     rclcpp::shutdown();
     return 0;
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(pure_pursuit)
+project(path_tracking)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -23,7 +23,7 @@ include_directories(
   include
 )
 
-set(executable_name pure_pursuit)
+set(executable_name path_tracking)
 
 set(library_name ${executable_name}_core)
 
@@ -33,7 +33,7 @@ set(dependencies
   geometry_msgs
 )
 
-add_library(${library_name} src/pure_pursuit.cpp)
+add_library(${library_name} src/path_tracking.cpp)
 target_include_directories(${library_name} PRIVATE include)
 ament_target_dependencies(${library_name} ${dependencies})
 

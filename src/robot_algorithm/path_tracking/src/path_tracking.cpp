@@ -14,21 +14,33 @@
  limitations under the License.
  */
 
-#ifndef PURE_PURSUIT__PURE_PURSUIT_HPP_
-#define PURE_PURSUIT__PURE_PURSUIT_HPP_
-
-#include "rclcpp/rclcpp.hpp"
+#include "path_tracking/path_tracking.hpp"
 
 namespace path_tracking
 {
-class PurePursuit : public rclcpp::Node
+PathTracking::PathTracking()
+: Node("path_tracking")
 {
-public:
-    PurePursuit();
-    ~PurePursuit();
+     RCLCPP_INFO(this->get_logger(), "path_tracking is running...");
+}
 
-private:
+PathTracking::~PathTracking()
+{
 
-};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }  // namespace path_tracking
-#endif  // PURE_PURSUIT__PURE_PURSUIT_HPP_
+
