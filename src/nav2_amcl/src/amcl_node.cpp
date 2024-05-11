@@ -262,6 +262,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
   estimate_pose_pub_->on_activate();
+  estimate_pose_status_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -308,6 +309,7 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   pose_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
   estimate_pose_pub_->on_deactivate();
+  estimate_pose_status_pub_->on_deactivate();
 
   // reset dynamic parameter handler
   dyn_params_handler_.reset();
@@ -354,6 +356,7 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   pose_pub_.reset();
   particle_cloud_pub_.reset();
   estimate_pose_pub_.reset();
+  estimate_pose_status_pub_.reset();
 
   // Odometry
   motion_model_.reset();
@@ -1546,6 +1549,10 @@ AmclNode::initPubSub()
   estimate_pose_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(
     "estimate_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+  
+  estimate_pose_status_pub_ = this->create_publisher<std_msgs::msg::Bool>(
+    "localization_accuracy",
+    rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 
   RCLCPP_INFO(get_logger(), "Subscribed to map topic.");
 }
@@ -1634,6 +1641,12 @@ AmclNode::initTimer()
   timer_ = this->create_wall_timer(
     std::chrono::milliseconds(20),
     std::bind(&AmclNode::timerCallback, this));
+  
+  timer_1s_ = this->create_wall_timer(
+    std::chrono::seconds(1),
+    std::bind(&AmclNode::timer1sCallback, this));
+  // 初始化变量
+  estimate_pose_status_.data = true;
 }
 
 void
@@ -1645,6 +1658,19 @@ AmclNode::timerCallback()
   msg.header.stamp = rclcpp::Clock().now();
   estimate_pose_pub_->publish(msg);
   RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [x %lf, y %lf, yaw %lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
+}
+
+void
+AmclNode::timer1sCallback()
+{
+  auto msg = std_msgs::msg::Bool();
+  msg = estimate_pose_status_;
+  // 无时间戳，增加日志打印提供时间戳
+  if (!estimate_pose_status_.data) {
+    RCLCPP_INFO(this->get_logger(), "estimate pose accuracy status: %s",
+      estimate_pose_status_.data ? "True" : "false");
+  }
+  estimate_pose_status_pub_->publish(msg);
 }
 
 }  // namespace nav2_amcl

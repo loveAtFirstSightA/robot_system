@@ -43,6 +43,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -401,7 +402,16 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
   geometry_msgs::msg::Vector3Stamped estimate_pose_;
 
+private:
+  void timer1sCallback();
 
+  rclcpp::TimerBase::SharedPtr timer_1s_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_; 
+  std_msgs::msg::Bool estimate_pose_status_;  //  变更即发布
+
+private:
+  // 此处实现利用激光里程计和轮速里程计判断机器人的估计位置是否异常
+  
 
 
 };
