@@ -23,6 +23,13 @@ PathTracking::PathTracking()
 {
      RCLCPP_INFO(this->get_logger(), "path_tracking is running...");
      initSubPub();
+     initTimer();
+
+     // debug
+     line_s_.x = 1.76f;
+     line_s_.y = 0.0f;
+     line_e_.x = 1.76f;
+     line_e_.y = -9.0f;
 }
 
 PathTracking::~PathTracking()
@@ -42,6 +49,28 @@ PathTracking::initSubPub()
           10);
      
      RCLCPP_INFO(this->get_logger(), "All Subscribers Publishers initial successfully");
+}
+
+void
+PathTracking::initTimer()
+{
+     timer_ = this->create_wall_timer(
+          std::chrono::microseconds(20),
+          std::bind(&PathTracking::timerCallback, this));
+}
+
+void
+PathTracking::timerCallback()
+{
+     double w;
+     // debug
+     w = -0.1f;
+     // 控制角速度解算和发布
+
+     // 调用纯跟踪算法
+
+     // 发布速度指令 T = 20ms
+     sendVelocity(0.0f, w);
 }
 
 void

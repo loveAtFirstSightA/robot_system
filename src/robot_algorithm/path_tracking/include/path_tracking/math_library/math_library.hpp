@@ -22,14 +22,21 @@
 
 namespace path_tracking
 {
+
 class MathLibrary
 {
 public:
     MathLibrary();
     ~MathLibrary();
 
-private:
+    // 计算向量的长度
+    // 计算向量的方向
 
+
+private:
+    // 私有变量
+    double x{0.0f};
+    double y{0.0f};
 
 
 

@@ -21,9 +21,9 @@ def generate_launch_description():
         package='nav2_amcl',
         executable='amcl',
         name='amcl',
+        arguments=['--ros-args', '--log-level', 'info'],
         parameters=[os.path.join(get_package_share_directory('nav2_amcl'),
-            'config',
-            'params.yaml')],
+            'config', 'params.yaml')],
         output='screen')
     
     nav2_lifecycle_manager_cmd = Node(

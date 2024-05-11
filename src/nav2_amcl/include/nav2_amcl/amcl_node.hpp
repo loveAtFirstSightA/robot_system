@@ -394,11 +394,12 @@ protected:
   std::string map_topic_{"map"};
 
 private:
+  void initTimer();
   void timerCallback();
-
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr robot_pose_pub_;
+  
   rclcpp::TimerBase::SharedPtr timer_;
-  geometry_msgs::msg::Vector3Stamped current_pose_;
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
+  geometry_msgs::msg::Vector3Stamped estimate_pose_;
 
 
 

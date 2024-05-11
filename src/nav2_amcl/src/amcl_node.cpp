@@ -42,7 +42,6 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
-#include "geometry_msgs/msg/vector3_stamped.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -245,6 +244,7 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initLaserScan();
   initMessageFilters();
   initPubSub();
+  initTimer();
   initServices();
   initOdometry();
   executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
@@ -261,7 +261,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
-  robot_pose_pub_->on_activate();
+  estimate_pose_pub_->on_activate();
 
   first_pose_sent_ = false;
 
@@ -307,7 +307,7 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly deactivated
   pose_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
-  robot_pose_pub_->on_deactivate();
+  estimate_pose_pub_->on_deactivate();
 
   // reset dynamic parameter handler
   dyn_params_handler_.reset();
@@ -353,7 +353,7 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   // PubSub
   pose_pub_.reset();
   particle_cloud_pub_.reset();
-  robot_pose_pub_.reset();
+  estimate_pose_pub_.reset();
 
   // Odometry
   motion_model_.reset();
@@ -977,13 +977,10 @@ AmclNode::publishAmclPose(
     hyps[max_weight_hyp].pf_pose_mean.v[0],
     hyps[max_weight_hyp].pf_pose_mean.v[1],
     hyps[max_weight_hyp].pf_pose_mean.v[2]);
-  
-  // 使用另一个话题发布机器人位姿
-  current_pose_.header.frame_id = "robot_current_pose";
-  current_pose_.header.stamp = rclcpp::Clock().now();
-  current_pose_.vector.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
-  current_pose_.vector.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
-  current_pose_.vector.z = hyps[max_weight_hyp].pf_pose_mean.v[2];
+
+  estimate_pose_.vector.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
+  estimate_pose_.vector.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
+  estimate_pose_.vector.z = hyps[max_weight_hyp].pf_pose_mean.v[2];
 }
 
 void
@@ -1546,14 +1543,9 @@ AmclNode::initPubSub()
     map_topic_, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
     std::bind(&AmclNode::mapReceived, this, std::placeholders::_1));
   
-  robot_pose_pub_ = create_publisher<geometry_msgs::msg::Vector3Stamped>(
-    "robot_pose",
+  estimate_pose_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(
+    "estimate_pose",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-
-  // init timer
-  timer_ = create_wall_timer(
-    std::chrono::microseconds(20),
-    std::bind(&AmclNode::timerCallback, this));
 
   RCLCPP_INFO(get_logger(), "Subscribed to map topic.");
 }
@@ -1637,11 +1629,22 @@ AmclNode::initLaserScan()
 }
 
 void
+AmclNode::initTimer()
+{
+  timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(20),
+    std::bind(&AmclNode::timerCallback, this));
+}
+
+void
 AmclNode::timerCallback()
 {
   auto msg = geometry_msgs::msg::Vector3Stamped();
-  msg = current_pose_;
-  robot_pose_pub_->publish(msg);
+  msg = estimate_pose_;
+  msg.header.frame_id = "estimate_pose_";
+  msg.header.stamp = rclcpp::Clock().now();
+  estimate_pose_pub_->publish(msg);
+  RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [x %lf, y %lf, yaw %lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
 }
 
 }  // namespace nav2_amcl
