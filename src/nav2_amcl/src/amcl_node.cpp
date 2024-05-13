@@ -332,6 +332,8 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   global_loc_srv_.reset();
   initial_guess_srv_.reset();
   nomotion_update_srv_.reset();
+  // fc
+  init_pose_srv_.reset();
   executor_thread_.reset();  //  to make sure initial_pose_sub_ completely exit
   initial_pose_sub_.reset();
   laser_scan_connection_.disconnect();
@@ -524,11 +526,69 @@ AmclNode::nomotionUpdateCallback(
 }
 
 void
+AmclNode::initPoseCallback(
+    const std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Request> request,
+    std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Response> response)
+{
+  RCLCPP_INFO(get_logger(), "Received request to initialization amcl pose");
+  if (request->init_pose.header.frame_id == "")
+  {
+    RCLCPP_WARN(get_logger(),
+      "The request of frame_id is empty, please input it with global frame_id");
+    response->result = false;
+    response->message = "The request of frame_id is empty, please input it with global frame_id";
+    return;
+  }
+  if (request->init_pose.header.frame_id != global_frame_id_)
+  {
+    RCLCPP_WARN(get_logger(),
+      "The request of frame_id \"%s\" is not in global frame \"%s\"",
+      request->init_pose.header.frame_id.c_str(), global_frame_id_.c_str());
+    response->result = false;
+    response->message = "The request of frame_id is not in global frame, please check";
+    return;
+  }
+  last_published_pose_ = request->init_pose;
+  if (!active_) {
+    init_pose_received_on_inactive = true;
+    RCLCPP_WARN(
+      get_logger(), "Received initial pose request, "
+      "but AMCL is not yet in the active state");
+    response->result = false;
+    response->message = "AMCL node is not yet in the active state";
+    return;
+  }
+  // fc
+  auto initial_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+  initial_pose = request->init_pose;
+  double sum = initial_pose.pose.pose.position.x + initial_pose.pose.pose.position.y + tf2::getYaw(initial_pose.pose.pose.orientation);
+  if (sum != 0) {
+    change_map_automatic_ = true;
+    set_pos_automatic_.x = initial_pose.pose.pose.position.x;
+    set_pos_automatic_.y = initial_pose.pose.pose.position.y;
+    set_pos_automatic_.z = tf2::getYaw(initial_pose.pose.pose.orientation);
+    RCLCPP_INFO(get_logger(), "Program set init pose automatic");
+  } else {
+    change_map_automatic_ = false;
+    RCLCPP_INFO(get_logger(), "Humble set init pose manual");
+  }
+  RCLCPP_INFO(get_logger(), "Amcl initial pose: [x %6.4lf, y %6.4lf, yaw %6.4lf]",
+    initial_pose.pose.pose.position.x, initial_pose.pose.pose.position.y, tf2::getYaw(initial_pose.pose.pose.orientation));
+  handleInitialPose(initial_pose);
+  response->result = true;
+  response->message = "Amcl initial pose success";
+}
+
+void
 AmclNode::initialPoseReceived(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
   std::lock_guard<std::recursive_mutex> cfl(mutex_);
 
   RCLCPP_INFO(get_logger(), "initialPoseReceived");
+
+  RCLCPP_WARN(get_logger(), "Can not use this way to initialization amcl pose");
+  RCLCPP_WARN(get_logger(), "Please use service(amcl_init_pose)");
+  // return;
 
   if (msg->header.frame_id == "") {
     // This should be removed at some point
@@ -1571,6 +1631,10 @@ AmclNode::initServices()
   nomotion_update_srv_ = create_service<std_srvs::srv::Empty>(
     "request_nomotion_update",
     std::bind(&AmclNode::nomotionUpdateCallback, this, _1, _2, _3));
+  
+  init_pose_srv_ = create_service<fcbox_msgs::srv::AmclInitPose>(
+    "amcl_init_pose",
+    std::bind(&AmclNode::initPoseCallback, this, _1, _2));
 }
 
 void

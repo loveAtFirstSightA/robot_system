@@ -45,6 +45,9 @@
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "std_msgs/msg/bool.hpp"
 
+// fc
+#include "fcbox_msgs/srv/amcl_init_pose.hpp"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wreorder"
@@ -393,6 +396,15 @@ protected:
   double z_rand_;
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
+
+private:
+	void initPoseCallback(
+	    const std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Request> request,
+	    std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Response> response);
+
+	rclcpp::Service<fcbox_msgs::srv::AmclInitPose>::SharedPtr init_pose_srv_;
+	bool change_map_automatic_{false};
+	geometry_msgs::msg::Vector3 set_pos_automatic_;
 
 private:
   void initTimer();
