@@ -18,11 +18,15 @@ find_package(nav2_util REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(fcbox_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(csm REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 nav2_package()
 
 include_directories(
   include
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 include(CheckSymbolExists)
@@ -67,6 +71,9 @@ set(dependencies
   nav2_msgs
   pluginlib
   fcbox_msgs
+  std_msgs
+  csm
+  Eigen3
 )
 
 ament_target_dependencies(${executable_name}
@@ -106,6 +113,10 @@ install(DIRECTORY config
 )
 
 install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY maps
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -9,7 +9,9 @@
                 "${workspaceFolder}/src/**",
                 "/opt/ros/humble/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/src/nav2_amcl/include/"
+                "${workspaceFolder}/src/nav2_amcl/include/",
+                "${workspaceFolder}/src/library/csm/include",
+                "${workspaceFolder}/install/fcbox_msgs/include/fcbox_msgs"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",

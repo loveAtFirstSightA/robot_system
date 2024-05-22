@@ -1,13 +1,12 @@
 amcl:
   ros__parameters:
     use_sim_time: True
-    alpha1: 0.001
-    alpha2: 0.001
-    alpha3: 0.001
-    alpha4: 0.001
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
     alpha5: 0.2
-    # base_frame_id: "base_footprint"
-    base_frame_id: "base_link"
+    base_frame_id: "base_footprint"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
@@ -33,15 +32,9 @@ amcl:
     tf_broadcast: true
     transform_tolerance: 1.0
     update_min_a: 0.2
-    update_min_d: 0.05
+    update_min_d: 0.25
     z_hit: 0.5
     z_max: 0.05
     z_rand: 0.5
     z_short: 0.05
-    scan_topic: /bcr_bot/scan
-    set_initial_pose: True
-    initial_pose.x: 1.760
-    initial_pose.y: 0.0
-    initial_pose.z: 0.0
-    initial_pose.yaw: -1.5707
-
+    scan_topic: scan

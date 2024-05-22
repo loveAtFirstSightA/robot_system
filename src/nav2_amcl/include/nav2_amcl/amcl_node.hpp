@@ -27,6 +27,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <chrono>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "message_filters/subscriber.h"
@@ -42,11 +43,13 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
-#include "geometry_msgs/msg/vector3_stamped.hpp"
-#include "std_msgs/msg/bool.hpp"
-
+#include "csm/csm.h"
 // fc
 #include "fcbox_msgs/srv/amcl_init_pose.hpp"
+#include "geometry_msgs/msg/vector3_stamped.hpp"
+#include "std_msgs/msg/bool.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -397,34 +400,78 @@ protected:
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
 
+// Initialize location using service settings
 private:
-	void initPoseCallback(
+  void initPoseCallback(
 	    const std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Request> request,
 	    std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Response> response);
 
 	rclcpp::Service<fcbox_msgs::srv::AmclInitPose>::SharedPtr init_pose_srv_;
-	bool change_map_automatic_{false};
+  bool change_map_automatic_{false};
 	geometry_msgs::msg::Vector3 set_pos_automatic_;
 
+// timer 50ms 1000ms
 private:
   void initTimer();
-  void timerCallback();
-  
-  rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
-  geometry_msgs::msg::Vector3Stamped estimate_pose_;
-
-private:
+  void timer50msCallback();
   void timer1sCallback();
+  
+  rclcpp::TimerBase::SharedPtr timer50ms_;
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
+  geometry_msgs::msg::Vector3Stamped estimate_pose_;  //  the current estimate pose, Dynamic updates with scan received
 
-  rclcpp::TimerBase::SharedPtr timer_1s_;
+  rclcpp::TimerBase::SharedPtr timer1s_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_; 
-  std_msgs::msg::Bool estimate_pose_status_;  //  变更即发布
+  std_msgs::msg::Bool estimate_pose_status_;
+  bool timer1s_first_executed_;
+
+// Amcl status monitor
+private:
+  void odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void estimete_pose_monitor(bool & status, const nav_msgs::msg::Odometry & last_odom, const nav_msgs::msg::Odometry & current_odom,
+    const geometry_msgs::msg::Vector3Stamped & last_estimate, const geometry_msgs::msg::Vector3Stamped & current_estimate);
+
+  // wheel-velocity-odometry
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
+  // Last odometer position
+  nav_msgs::msg::Odometry last_odom_;
+  nav_msgs::msg::Odometry current_odom_;
+  geometry_msgs::msg::Twist current_vel_;
+  geometry_msgs::msg::Vector3Stamped last_estimate_pose_;
+  // use default way to detec robot moved
+  bool robot_moved_{false};
+  bool first_set_estimate_pose_{true};
 
 private:
-  // 此处实现利用激光里程计和轮速里程计判断机器人的估计位置是否异常
+  void initPLICPParams();
+  void CreateCache(const sensor_msgs::msg::LaserScan::SharedPtr & scan_msg);
+  void convertMapToLDP(const nav_msgs::msg::OccupancyGrid::SharedPtr msg, LDP & ldp);
+  void convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan_msg, LDP & ldp);
+  void scanMatchWithPLICP(LDP & curr_ldp_scan, const rclcpp::Time & time);
   
+  LDP ldp_current_scan_;  //  LDP - current scan points
+  LDP ldp_map_point_;  //  LDP - map data points
 
+  // std::chrono::steady_clock::time_point start_time_;
+  // std::chrono::steady_clock::time_point end_time_;
+  // std::chrono::duration<double> used_time_;
+  bool initialized_{false};
+  std::vector<double> a_cos_;
+  std::vector<double> s_sin_;
+  // csm
+  sm_params input_;
+  sm_result output_;
+  LDP pre_ldp_scan_;  //  LDP - aser data points
+  rclcpp::Time last_icp_time_;
+  bool conver_map_to_ldp_{false};
+  double tf_x_;
+  double tf_y_;
+  double tf_theta_;
+  double last_tf_x_;
+  double last_tf_y_;
+  double last_tf_theta_;
 
 };
 

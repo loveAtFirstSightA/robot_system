@@ -10,11 +10,18 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    map_yaml_path_arg = DeclareLaunchArgument(
+        'map_yaml_path',
+        default_value='/home/lio/robot_system/maps/turtlebot3_world.yaml',
+        description='Full path to map yaml file to load'
+    )
+    map_yaml_path = LaunchConfiguration('map_yaml_path')
+
     nav2_map_server_cmd = Node(
         package='nav2_map_server',
         executable='map_server',
         name='map_server',
-        parameters=[{'yaml_filename': '/home/lio/robot_system/maps/factory.yaml'}],
+        parameters=[{'yaml_filename': map_yaml_path}],
         output='screen')
     
     nav2_amcl_cmd = Node(
@@ -37,8 +44,9 @@ def generate_launch_description():
     
     ld = LaunchDescription()
     
+    ld.add_action(map_yaml_path_arg)
     ld.add_action(nav2_map_server_cmd)
-    ld.add_action(nav2_lifecycle_manager_cmd)
     ld.add_action(nav2_amcl_cmd)
+    ld.add_action(nav2_lifecycle_manager_cmd)
     
     return ld
