@@ -17,12 +17,12 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "iterative_closest_point/iterative_closest_point.hpp"
+#include "iterative_closest_point/scan_to_map_icp.hpp"
 
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    auto node =  std::make_shared<iterative_closest_point::IterativeClosestPoint>();
+    auto node = std::make_shared<iterative_closest_point::ScanToMapICP>();
     rclcpp::spin(node->get_node_base_interface());
     rclcpp::shutdown();
     return 0;
