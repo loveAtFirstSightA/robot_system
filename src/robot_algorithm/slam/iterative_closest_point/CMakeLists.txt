@@ -37,7 +37,10 @@ set(dependencies
   nav_msgs
 )
 
-add_library(${library_name} src/iterative_closest_point.cpp)
+add_library(${library_name} 
+  src/iterative_closest_point.cpp
+  src/scan_to_map_icp.cpp
+)
 target_include_directories(${library_name} PRIVATE include)
 ament_target_dependencies(${library_name} ${dependencies})
 

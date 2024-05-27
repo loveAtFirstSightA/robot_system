@@ -24,7 +24,7 @@ ScanToMapICP::ScanToMapICP()
      map_sub_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
           "map",
           10,
-          std::bind(&ScanToMapICP::scanSubCallback, this, std::placeholders::_1)); 
+          std::bind(&ScanToMapICP::mapSubCallback, this, std::placeholders::_1)); 
      scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
           "scan",
           10,
