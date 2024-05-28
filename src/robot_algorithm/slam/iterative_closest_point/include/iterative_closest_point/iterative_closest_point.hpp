@@ -17,11 +17,19 @@
 #ifndef ITERATIVE_CLOSEST_POINT__ITERATIVE_CLOSEST_POINT_HPP_
 #define ITERATIVE_CLOSEST_POINT__ITERATIVE_CLOSEST_POINT_HPP_
 
+// logger
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <sstream>
+#include <string>
+
 // pcl header file
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
 #include "pcl/registration/icp.h"
+#include "nav_msgs/msg/occupancy_grid.hpp"
 
 #include "sensor_msgs/msg/laser_scan.hpp"
 
@@ -35,18 +43,15 @@ public:
     void processICP();
 
     // 转换地图格式为PCL
-    void converMapToPcl();
+    void converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map);
 
     // 转换scan格式为PCL
-    void converScanToPcl();
+    void converScanToPcl(const sensor_msgs::msg::LaserScan::SharedPtr scan, double x, double y, double yaw);
 
 private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr source_pointcloud_;    //  当前激光点集合
     pcl::PointCloud<pcl::PointXYZ>::Ptr target_pointcloud_;   //  栅格地图点集
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp_;
-
-
-
 
 };
 }  // namespace iterative_closest_point

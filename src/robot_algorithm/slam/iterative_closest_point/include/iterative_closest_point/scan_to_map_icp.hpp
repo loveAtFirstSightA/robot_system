@@ -23,6 +23,10 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
+#include "iterative_closest_point/scan_to_map_icp.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "tf2/utils.h"
 
 namespace iterative_closest_point
 {
@@ -35,11 +39,14 @@ public:
 private:
     void mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
     void scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    bool calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf);
     
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
     std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
+
+    iterative_closest_point::ICP icp_;
 
 
 };
