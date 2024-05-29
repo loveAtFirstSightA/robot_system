@@ -41,7 +41,6 @@ ScanToMapICP::~ScanToMapICP()
 
 }
 
-
 void
 ScanToMapICP::mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
 {

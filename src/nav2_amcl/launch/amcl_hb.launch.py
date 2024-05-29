@@ -12,8 +12,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     map_yaml_path_arg = DeclareLaunchArgument(
         'map_yaml_path',
-        # default_value='/home/lio/robot_system/maps/turtlebot3_world.yaml',
-        default_value='/home/lio/robot_system/maps/factory.yaml',
+        default_value='/home/fcbox/.fcbox/map/1709870483105/MAP_release1.4.3_0308_1709870471.yaml',
         description='Full path to map yaml file to load'
     )
     map_yaml_path = LaunchConfiguration('map_yaml_path')
@@ -31,7 +30,7 @@ def generate_launch_description():
         name='amcl',
         arguments=['--ros-args', '--log-level', 'info'],
         parameters=[os.path.join(get_package_share_directory('nav2_amcl'),
-            'config', 'params.yaml')],
+            'config', 'hb.yaml')],
         output='screen')
     
     nav2_lifecycle_manager_cmd = Node(

@@ -44,12 +44,15 @@
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
 #include "csm/csm.h"
+#include "nav2_amcl/icp/icp.hpp"
+#include "nav2_amcl/icp/plicp.hpp"
 // fc
 #include "fcbox_msgs/srv/amcl_init_pose.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -415,6 +418,7 @@ private:
   void initTimer();
   void timer50msCallback();
   void timer1sCallback();
+  void timer3sCallback();
   
   rclcpp::TimerBase::SharedPtr timer50ms_;
   rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
@@ -425,12 +429,15 @@ private:
   std_msgs::msg::Bool estimate_pose_status_;
   bool timer1s_first_executed_;
 
+  rclcpp::TimerBase::SharedPtr timer3s_;
+  sensor_msgs::msg::LaserScan::SharedPtr scan_;
+
 // Amcl status monitor
 private:
   void odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
   void velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
-  void estimete_pose_monitor(bool & status, const nav_msgs::msg::Odometry & last_odom, const nav_msgs::msg::Odometry & current_odom,
-    const geometry_msgs::msg::Vector3Stamped & last_estimate, const geometry_msgs::msg::Vector3Stamped & current_estimate);
+  void estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
+    geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist);
 
   // wheel-velocity-odometry
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
@@ -445,33 +452,17 @@ private:
   bool first_set_estimate_pose_{true};
 
 private:
-  void initPLICPParams();
-  void CreateCache(const sensor_msgs::msg::LaserScan::SharedPtr & scan_msg);
-  void convertMapToLDP(const nav_msgs::msg::OccupancyGrid::SharedPtr msg, LDP & ldp);
-  void convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan_msg, LDP & ldp);
-  void scanMatchWithPLICP(LDP & curr_ldp_scan, const rclcpp::Time & time);
-  
-  LDP ldp_current_scan_;  //  LDP - current scan points
-  LDP ldp_map_point_;  //  LDP - map data points
+  bool calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf);
 
-  // std::chrono::steady_clock::time_point start_time_;
-  // std::chrono::steady_clock::time_point end_time_;
-  // std::chrono::duration<double> used_time_;
-  bool initialized_{false};
-  std::vector<double> a_cos_;
-  std::vector<double> s_sin_;
-  // csm
-  sm_params input_;
-  sm_result output_;
-  LDP pre_ldp_scan_;  //  LDP - aser data points
-  rclcpp::Time last_icp_time_;
-  bool conver_map_to_ldp_{false};
-  double tf_x_;
-  double tf_y_;
-  double tf_theta_;
-  double last_tf_x_;
-  double last_tf_y_;
-  double last_tf_theta_;
+  ICP icp_;
+  float icp_x_;
+  float icp_y_;
+  float icp_yaw_;
+
+private:
+  PLICP plicp_;
+  geometry_msgs::msg::Vector3 last_pos_;
+  geometry_msgs::msg::Vector3 current_pos_;
 
 };
 

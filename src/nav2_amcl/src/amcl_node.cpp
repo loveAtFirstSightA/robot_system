@@ -247,7 +247,6 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initServices();
   initOdometry();
   initTimer();
-  initPLICPParams();
   executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   executor_->add_callback_group(callback_group_, get_node_base_interface());
   executor_thread_ = std::make_unique<nav2_util::NodeThread>(executor_);
@@ -706,22 +705,12 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     return;
   }
   std::chrono::steady_clock::time_point start_time_ = std::chrono::steady_clock::now();
-  sensor_msgs::msg::LaserScan::SharedPtr scan = std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan);
-  if (!initialized_) {
-    CreateCache(scan);
-    convertScanToLDP(scan, pre_ldp_scan_);
-    last_icp_time_ = scan->header.stamp;
-    initialized_ = true;
-    return;
-  }
-  // conver scan to ldp
-  convertScanToLDP(scan, ldp_current_scan_);
-  scanMatchWithPLICP(ldp_current_scan_, scan->header.stamp);
+  scan_ = std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan);
+  plicp_.convertScanToLDP(scan_);
   std::chrono::steady_clock::time_point end_time_ = std::chrono::steady_clock::now();
   std::chrono::duration<double> used_time_ = std::chrono::duration_cast<std::chrono::duration<double>>(end_time_ - start_time_);
   if (used_time_.count() > 0.1f) {
-    // std::cout << "Scan Match cost time: " << used_time_.count() << " 秒。" << std::endl;
-    RCLCPP_INFO(this->get_logger(), "Scan Match cost time: %lf 秒", used_time_.count());
+    RCLCPP_INFO(this->get_logger(), "Scan Match cost time: %lf s", used_time_.count());
   }
   std::string laser_scan_frame_id = nav2_util::strip_leading_slash(laser_scan->header.frame_id);
   last_laser_received_ts_ = now();
@@ -1486,9 +1475,7 @@ AmclNode::mapReceived(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   }
   handleMapMessage(*msg);
   first_map_received_ = true;
-  // conver map to ldp
-  // convertMapToLDP(msg, ldp_map_point_);
-
+  icp_.converMapToPcl(msg);
 }
 
 void
@@ -1647,8 +1634,8 @@ AmclNode::initPubSub()
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "odom",
-    // "odom_data",
+    // "odom",
+    "odom_data",
     1,
     std::bind(&AmclNode::odomSubCallback, this, std::placeholders::_1));
 
@@ -1753,6 +1740,11 @@ AmclNode::initTimer()
   timer1s_ = this->create_wall_timer(
     std::chrono::seconds(1),
     std::bind(&AmclNode::timer1sCallback, this));
+
+  // timer3s_ = this->create_wall_timer(
+  //   std::chrono::seconds(3),
+  //   std::bind(&AmclNode::timer3sCallback, this));
+  
   // 初始化变量
   estimate_pose_status_.data = true;
   timer1s_first_executed_ = true;
@@ -1782,13 +1774,11 @@ AmclNode::timer1sCallback()
     RCLCPP_INFO(this->get_logger(), "\x1b[32mlast_odom_: [x %.4lf, y %.4lf, theta %.4lf], last_estimate_pose_:[x %.4lf, y %.4lf, theta %.4lf]\x1b[0m",
       last_odom_.pose.pose.position.x, last_odom_.pose.pose.position.y, tf2::getYaw(last_odom_.pose.pose.orientation),
       last_estimate_pose_.vector.x, last_estimate_pose_.vector.y, last_estimate_pose_.vector.z);
-    last_tf_x_ = tf_x_;
-    last_tf_y_ = tf_y_;
-    last_tf_theta_ = tf_theta_;
+    plicp_.getTransform(last_pos_.x, last_pos_.y);
     timer1s_first_executed_ = false;
     return;
   }
-  RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [%.4lf, %.4lf, %.4lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
+  // RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [%.4lf, %.4lf, %.4lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
   if (!robot_moved_) {
     // auto msg = std_msgs::msg::Bool();
     // msg.data = true;
@@ -1796,9 +1786,14 @@ AmclNode::timer1sCallback()
     return;
   }
   std::chrono::steady_clock::time_point start_time_ = std::chrono::steady_clock::now();
+  plicp_.getTransform(current_pos_.x, current_pos_.y);
+  double delta_pos_x = std::fabs(current_pos_.x - last_pos_.x);
+  double delta_pos_y = std::fabs(current_pos_.y - last_pos_.y);
+  double delta = std::sqrt(std::pow(delta_pos_x, 2) + std::pow(delta_pos_y, 2));
+
   bool accuracy_status;
   // monitor main function
-  estimete_pose_monitor(accuracy_status, last_odom_, current_odom_, last_estimate_pose_, estimate_pose_);
+  estimete_pose_monitor(accuracy_status, last_odom_, current_odom_, last_estimate_pose_, estimate_pose_, delta);
   estimate_pose_status_.data = accuracy_status;
   auto msg = std_msgs::msg::Bool();
   msg = estimate_pose_status_;
@@ -1815,14 +1810,38 @@ AmclNode::timer1sCallback()
   }
   last_odom_ = current_odom_;
   last_estimate_pose_ = estimate_pose_;
+  last_pos_ = current_pos_;
+}
+
+void
+AmclNode::timer3sCallback()
+{
+#if 0
+  // add icp unit
+  geometry_msgs::msg::TransformStamped tf;
+  // step 2 获取雷达在地图上的位置
+  if (calculateTfLidarToMap(tf)) {
+    RCLCPP_INFO(this->get_logger(), "Calculate tf lidar to map success");
+    double x = tf.transform.translation.x;
+    double y = tf.transform.translation.y;
+    double yaw = tf2::getYaw(tf.transform.rotation);
+    // step 3 将雷达点变换至地图坐标系
+    // step 4 转换激光点为PCL数据格式
+    icp_.converScanToPcl(scan_, x, y, yaw);
+    // step 5 调用PCLMATCH，完成数据迭代
+    icp_.processICPScanWithMap(100, icp_x_, icp_y_, icp_yaw_);
+  } else {
+    RCLCPP_WARN(this->get_logger(), "Cannot catch tf lidar to map");
+  }
+#endif
 }
 
 void
 AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  // handle odometry
-  RCLCPP_DEBUG(this->get_logger(), "current odom: [x %.4f, y %.4f, yaw %.4f]", 
-    msg->pose.pose.position.x, msg->pose.pose.position.y, tf2::getYaw(msg->pose.pose.orientation));
+  // // handle odometry
+  // RCLCPP_DEBUG(this->get_logger(), "current odom: [x %.4f, y %.4f, yaw %.4f]", 
+  //   msg->pose.pose.position.x, msg->pose.pose.position.y, tf2::getYaw(msg->pose.pose.orientation));
   current_odom_ = *msg;
 }
 
@@ -1834,20 +1853,20 @@ AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 }
 
 void
-AmclNode::estimete_pose_monitor(bool & status, const nav_msgs::msg::Odometry & last_odom, const nav_msgs::msg::Odometry & current_odom,
-  const geometry_msgs::msg::Vector3Stamped & last_estimate, const geometry_msgs::msg::Vector3Stamped & current_estimate)
+AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
+  geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist)
 {
   // step1 calculate delte value of odometry
   double delta_x = current_odom.pose.pose.position.x - last_odom.pose.pose.position.x;
   double delta_y = current_odom.pose.pose.position.y - last_odom.pose.pose.position.y;
   double delta_theta = tf2::getYaw(current_odom.pose.pose.orientation) - tf2::getYaw(last_odom.pose.pose.orientation);
-  RCLCPP_INFO(this->get_logger(), "Delta Odometry: dx = %f, dy = %f, dtheta = %f", delta_x, delta_y, delta_theta);
+  RCLCPP_INFO(this->get_logger(), "Delta odometry: dx = %f, dy = %f, dtheta = %f", delta_x, delta_y, delta_theta);
 
   // step2 calculate delte value of estimate pose
   double delta_estimate_x = current_estimate.vector.x - last_estimate.vector.x;
   double delta_estimate_y = current_estimate.vector.y - last_estimate.vector.y;
   double delta_estimate_theta = current_estimate.vector.z - last_estimate.vector.z;
-  RCLCPP_INFO(this->get_logger(), "Delta Estimate: dx = %f, dy = %f, dtheta = %f", delta_estimate_x, delta_estimate_y, delta_estimate_theta);
+  RCLCPP_INFO(this->get_logger(), "Delta estimate: dx = %f, dy = %f, dtheta = %f", delta_estimate_x, delta_estimate_y, delta_estimate_theta);
 
   // step3 calculate delta value
   double delta_x_error = delta_x - delta_estimate_x;
@@ -1873,211 +1892,36 @@ AmclNode::estimete_pose_monitor(bool & status, const nav_msgs::msg::Odometry & l
       status = true;
   }
   RCLCPP_INFO(this->get_logger(), "The estimate accurate: %s", status ? "True" : "False");
-  // step4 calculate PLICP odometry
-  // calculate delta
-  double delta_tf_x = tf_x_ - last_tf_x_;
-  double delta_tf_y = tf_y_ - last_tf_y_;
-  double delta_tf_theta = tf_theta_ - last_tf_theta_;
-  RCLCPP_INFO(this->get_logger(), "PLICP: delta[%lf, %lf, %lf]", delta_tf_x, delta_tf_y, delta_tf_theta);
-  // reset variable
-  last_tf_x_ = tf_x_;
-  last_tf_y_ = tf_y_;
-  last_tf_theta_ = tf_theta_;
+  // // step4 calculate PLICP odometry
+  // // calculate delta
+  // double delta_tf_x = tf_x_ - last_tf_x_;
+  // double delta_tf_y = tf_y_ - last_tf_y_;
+  // double delta_tf_theta = tf_theta_ - last_tf_theta_;
+  // RCLCPP_INFO(this->get_logger(), "PLICP: delta[%lf, %lf, %lf]", delta_tf_x, delta_tf_y, delta_tf_theta);
+  // // reset variable
+  // last_tf_x_ = tf_x_;
+  // last_tf_y_ = tf_y_;
+  // last_tf_theta_ = tf_theta_;
+  RCLCPP_INFO(this->get_logger(), "plicp delta: %lf", dist);
 }
 
-void
-AmclNode::initPLICPParams()
+
+bool
+AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf) 
 {
-  RCLCPP_INFO(this->get_logger(), "initialization params");
-  this->declare_parameter<double>("max_angular_correction_deg", 45.0);
-  this->declare_parameter<double>("max_linear_correction", 1.0);
-  this->declare_parameter<int>("max_iterations", 50); //  100 cost time * 0.x?
-  this->declare_parameter<double>("epsilon_xy", 0.000001);
-  this->declare_parameter<double>("epsilon_theta", 0.000001);
-  this->declare_parameter<double>("max_correspondence_dist", 1.0);
-  this->declare_parameter<double>("sigma", 0.010);
-  this->declare_parameter<int>("use_corr_tricks", 1);
-  this->declare_parameter<int>("restart", 0);
-  this->declare_parameter<double>("restart_threshold_mean_error", 0.01);
-  this->declare_parameter<double>("restart_dt", 1.0);
-  this->declare_parameter<double>("restart_dtheta", 0.1);
-  this->declare_parameter<double>("clustering_threshold", 0.25);
-  this->declare_parameter<int>("orientation_neighbourhood", 20);
-  this->declare_parameter<int>("use_point_to_line_distance", 1);
-  this->declare_parameter<int>("do_alpha_test", 0);
-  this->declare_parameter<double>("do_alpha_test_thresholdDeg", 20.0);
-  this->declare_parameter<double>("outliers_maxPerc", 0.90);
-  this->declare_parameter<double>("outliers_adaptive_order", 0.7);
-  this->declare_parameter<double>("outliers_adaptive_mult", 2.0);
-  this->declare_parameter<int>("do_visibility_test", 0);
-  this->declare_parameter<int>("outliers_remove_doubles", 1);
-  this->declare_parameter<int>("do_compute_covariance", 0);
-  this->declare_parameter<int>("debug_verify_tricks", 0);
-  this->declare_parameter<int>("use_ml_weights", 0);
-  this->declare_parameter<int>("use_sigma_weights", 0);
-
-  input_.max_angular_correction_deg = this->get_parameter("max_angular_correction_deg").as_double();
-  input_.max_linear_correction = this->get_parameter("max_linear_correction").as_double();
-  input_.max_iterations = this->get_parameter("max_iterations").as_int();
-  input_.epsilon_xy = this->get_parameter("epsilon_xy").as_double();
-  input_.epsilon_theta = this->get_parameter("epsilon_theta").as_double();
-  input_.max_correspondence_dist = this->get_parameter("max_correspondence_dist").as_double();
-  input_.sigma = this->get_parameter("sigma").as_double();
-  input_.use_corr_tricks = this->get_parameter("use_corr_tricks").as_int();
-  input_.restart = this->get_parameter("restart").as_int();
-  input_.restart_threshold_mean_error = this->get_parameter("restart_threshold_mean_error").as_double();
-  input_.restart_dt = this->get_parameter("restart_dt").as_double();
-  input_.restart_dtheta = this->get_parameter("restart_dtheta").as_double();
-  input_.clustering_threshold = this->get_parameter("clustering_threshold").as_double();
-  input_.orientation_neighbourhood = this->get_parameter("orientation_neighbourhood").as_int();
-  input_.use_point_to_line_distance = this->get_parameter("use_point_to_line_distance").as_int();
-  input_.do_alpha_test = this->get_parameter("do_alpha_test").as_int();
-  input_.do_alpha_test_thresholdDeg = this->get_parameter("do_alpha_test_thresholdDeg").as_double();
-  input_.outliers_maxPerc = this->get_parameter("outliers_maxPerc").as_double();
-  input_.outliers_adaptive_order = this->get_parameter("outliers_adaptive_order").as_double();
-  input_.outliers_adaptive_mult = this->get_parameter("outliers_adaptive_mult").as_double();
-  input_.do_visibility_test = this->get_parameter("do_visibility_test").as_int();
-  input_.outliers_remove_doubles = this->get_parameter("outliers_remove_doubles").as_int();
-  input_.do_compute_covariance = this->get_parameter("do_compute_covariance").as_int();
-  input_.debug_verify_tricks = this->get_parameter("debug_verify_tricks").as_int();
-  input_.use_ml_weights = this->get_parameter("use_ml_weights").as_int();
-  input_.use_sigma_weights = this->get_parameter("use_sigma_weights").as_int();
-}
-
-void
-AmclNode::CreateCache(const sensor_msgs::msg::LaserScan::SharedPtr & scan_msg)
-{
-  // 雷达数据间的角度是固定的，因此可以将对应角度的cos与sin值缓存下来，不用每次都计算
-  a_cos_.clear();
-  s_sin_.clear();
-  for (size_t i = 0; i < scan_msg->ranges.size(); i++) {
-      double angle = scan_msg->angle_min + scan_msg->angle_increment * i;
-      a_cos_.push_back(std::cos(angle));
-      s_sin_.push_back(std::sin(angle));
+  std::string target_link = "map";
+  // std::string source_link = "two_d_lidar";
+  std::string source_link = "laser_2d_link";
+  try {
+    tf = tf_buffer_->lookupTransform(target_link, source_link, tf2::TimePointZero);
+    // RCLCPP_DEBUG(this->get_logger(), "TF %s to %s, [%lf, %lf, %lf]",
+          // source_link.c_str(), target_link.c_str(), tf.transform.translation.x, tf.transform.translation.y, tf2::getYaw(tf.transform.rotation));
+    return true;
+  } catch (tf2::TransformException & ex) {
+    std::cerr << "Could not get transform from " << source_link << " to " << target_link << ": " << ex.what() << '\n';
+    return false;
   }
-  input_.min_reading = scan_msg->angle_min;
-  input_.max_reading = scan_msg->angle_max;
 }
-
-void
-AmclNode::convertMapToLDP(const nav_msgs::msg::OccupancyGrid::SharedPtr msg, LDP & ldp)
-{
-  // 获取栅格地图的尺寸
-  unsigned int width = msg->info.width;
-  unsigned int height = msg->info.height;
-  unsigned int size = width * height;
-  // 预先计算占用点的数量
-  unsigned int num_occupied = 0;
-  for (unsigned int i = 0; i < size; i++) {
-      if (msg->data[i] > 50) {  // Assume that values ​​over 50 indicate occupancy
-          num_occupied++;
-      }
-  }
-  // Allocate space for LDP structure
-  ldp = ld_alloc_new(num_occupied);
-  // Traverse the raster map and convert occupancy points to LDP format
-  unsigned int idx = 0;
-  for (unsigned int y = 0; y < height; y++) {
-      for (unsigned int x = 0; x < width; x++) {
-          unsigned int i = y * width + x;
-          if (msg->data[i] > 50) {  // Assume that values ​​over 50 indicate occupancy
-              // Calculate the position of the occupied point in the map coordinate system
-              double map_x = msg->info.origin.position.x + x * msg->info.resolution;
-              double map_y = msg->info.origin.position.y + y * msg->info.resolution;
-              // Add occupancy points to the LDP structure
-              ldp->valid[idx] = 1;
-              ldp->readings[idx] = 0;  // The distance of the occupied point is set to 0 because this is a point
-              ldp->theta[idx] = atan2(map_y, map_x);  // Calculate angle
-              ldp->cluster[idx] = -1;
-              idx ++;
-          }
-      }
-  }
-  ldp->min_theta = ldp->theta[0];
-  ldp->max_theta = ldp->theta[num_occupied - 1];
-  
-  ldp->odometry[0] = 0.0;
-  ldp->odometry[1] = 0.0;
-  ldp->odometry[2] = 0.0;
-  ldp->estimate[0] = 0.0;
-  ldp->estimate[1] = 0.0;
-  ldp->estimate[2] = 0.0;
-  ldp->true_pose[0] = 0.0;
-  ldp->true_pose[1] = 0.0;
-  ldp->true_pose[2] = 0.0;
-
-  conver_map_to_ldp_ = true;
-}
-
-void
-AmclNode::convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan_msg, LDP & ldp)
-{
-  unsigned int n = scan_msg->ranges.size();
-  ldp = ld_alloc_new(n);
-  for (unsigned int i = 0; i < n; i ++) {
-      // calculate position in laser frame
-      double r = scan_msg->ranges[i];
-      if (r > scan_msg->range_min && r < scan_msg->range_max) {
-          // fill in laser scan data
-          ldp->valid[i] = 1;
-          ldp->readings[i] = r;
-      } else {
-          ldp->valid[i] = 0;
-          ldp->readings[i] = -1;  //  for invalid range
-      }
-      ldp->theta[i] = scan_msg->angle_min + scan_msg->angle_increment * i;
-      ldp->cluster[i] = -1;
-  }
-  ldp->min_theta = ldp->theta[0];
-  ldp->max_theta = ldp->theta[n - 1];
-  
-  ldp->odometry[0] = 0.0;
-  ldp->odometry[1] = 0.0;
-  ldp->odometry[2] = 0.0;
-  ldp->estimate[0] = 0.0;
-  ldp->estimate[1] = 0.0;
-  ldp->estimate[2] = 0.0;
-  ldp->true_pose[0] = 0.0;
-  ldp->true_pose[1] = 0.0;
-  ldp->true_pose[2] = 0.0;
-}
-
-void
-AmclNode::scanMatchWithPLICP(LDP & curr_ldp_scan, const rclcpp::Time & time)
-{
-  input_.laser_ref = pre_ldp_scan_;
-  input_.laser_sens = curr_ldp_scan;
-
-  // 位置的预测数值为0 就是不能预测
-  input_.first_guess[0] = 0.0f;
-  input_.first_guess[1] = 0.0f;
-  input_.first_guess[2] = 0.0f;
-
-  // 调用csm里的函数进行plicp计算帧间的匹配，输出结果保存在output里
-  sm_icp(&input_, &output_);
-  if (output_.valid) {
-      // std::cout << "transfrom: (" << output_.x[0] << ", " << output_.x[1] << ", " 
-      //     << output_.x[2] * 180 / M_PI << ")" << std::endl;
-      // std::cout << "transfrom: (" << output_.x[0] << ", " << output_.x[1] << ", " 
-      //     << output_.x[2] << ")" << std::endl;
-      tf_x_ += output_.x[0];
-      tf_y_ += output_.x[1];
-      tf_theta_ += output_.x[2];
-      if (robot_moved_) {
-        // std::cout << "transfrom: (" << output_.x[0] << ", " << output_.x[1] << ", " << output_.x[2] << ")" << std::endl;
-        RCLCPP_INFO(this->get_logger(), "transfrom: [%lf, %lf, %lf]", output_.x[0], output_.x[1], output_.x[2]);
-      }
-  } else {
-      // std::cout << "not Converged" << std::endl;
-      RCLCPP_WARN(this->get_logger(), "Not Converged");
-  }
-  // 删除prev_ldp_scan_，用curr_ldp_scan进行替代
-  ld_free(pre_ldp_scan_);
-  pre_ldp_scan_ = curr_ldp_scan;
-  last_icp_time_ = time;
-}
-
-
 
 
 }  // namespace nav2_amcl
