@@ -1,0 +1,101 @@
+{
+	"cmdFunction" : 848,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1709870483105,
+	"mapName" : "MAP_release1.4.3_0308_1709870471",
+	"msgId" : 150914893,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742157948,
+				"stationName" : "nav1",
+				"stationType" : 0,
+				"x" : -3.1431800000000001,
+				"y" : -10.28083,
+				"yaw" : -1.5351600000000001
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742192144,
+				"stationName" : "nav2",
+				"stationType" : 0,
+				"x" : 8.0750499999999992,
+				"y" : -8.1812799999999992,
+				"yaw" : -0.046280000000000002
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742259496,
+				"stationName" : "nav3",
+				"stationType" : 0,
+				"x" : 20.87322,
+				"y" : -12.508929999999999,
+				"yaw" : 0.037130000000000003
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742224870,
+				"stationName" : "nav4",
+				"stationType" : 0,
+				"x" : 18.10106,
+				"y" : -6.327,
+				"yaw" : -0.027720000000000002
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742289884,
+				"stationName" : "nav5",
+				"stationType" : 0,
+				"x" : 16.37961,
+				"y" : -4.4205300000000003,
+				"yaw" : 3.1326000000000001
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742333724,
+				"stationName" : "nav6",
+				"stationType" : 0,
+				"x" : 19.720790000000001,
+				"y" : 13.304040000000001,
+				"yaw" : 1.5634600000000001
+			},
+			{
+				"extra" : "20240318150914693",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1710742388738,
+				"stationName" : "nav7",
+				"stationType" : 0,
+				"x" : 5.70228,
+				"y" : -4.3334999999999999,
+				"yaw" : -0.046089999999999999
+			}
+		]
+	},
+	"taskId" : 15914653,
+	"taskName" : "\u4e00\u952e\u5de1\u6e38",
+	"taskType" : 1
+}

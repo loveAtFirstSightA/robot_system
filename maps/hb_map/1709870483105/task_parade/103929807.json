@@ -1,0 +1,41 @@
+{
+	"cmdFunction" : 848,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1709870483105,
+	"mapName" : "MAP_release1.4.3_0308_1709870471",
+	"msgId" : 103929865,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "20240312103929768",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1709877136761,
+				"stationName" : "21floor_nav_T2",
+				"stationType" : 0,
+				"x" : -8.9264200000000002,
+				"y" : -6.0853700000000002,
+				"yaw" : 0.027019999999999999
+			},
+			{
+				"extra" : "20240312103929768",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1709896510345,
+				"stationName" : "21floor_nav_door",
+				"stationType" : 0,
+				"x" : 1.75919,
+				"y" : 3.4363999999999999,
+				"yaw" : 1.5371600000000001
+			}
+		]
+	},
+	"taskId" : 103929807,
+	"taskName" : "\u4e00\u952e\u5de1\u6e38",
+	"taskType" : 1
+}

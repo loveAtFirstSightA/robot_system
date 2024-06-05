@@ -1,0 +1,29 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1709870483105,
+	"mapName" : "MAP_release1.4.3_0308_1709870471",
+	"msgId" : 192059191,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "",
+				"isWork" : 0,
+				"mapId" : 1709870483105,
+				"mapName" : "MAP_release1.4.3_0308_1709870471",
+				"stationId" : 1709896510345,
+				"stationName" : "21floor_nav_door",
+				"stationType" : 0,
+				"x" : 1.75919,
+				"y" : 3.4363999999999999,
+				"yaw" : 1.5371600000000001
+			}
+		]
+	},
+	"taskId" : 192111769,
+	"taskName" : "21floor_nav_door",
+	"taskType" : 0
+}

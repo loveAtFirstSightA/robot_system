@@ -1,0 +1,10 @@
+image: /home/lio/robot_system/maps/hb_map/1709879272326/MAP_1floor_release1.4.3_0308_1709879260.pgm
+resolution: 0.050000
+origin: [-34.168903, -33.552225, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+map_name: MAP_1floor_release1.4.3_0308_1709879260
+area: reserve
+building: 2栋
+floor: 1

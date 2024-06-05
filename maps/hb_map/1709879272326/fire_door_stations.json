@@ -1,0 +1,23 @@
+{
+	"mapId" : 1709879272326,
+	"mapName" : "MAP_1floor_release1.4.3_0308_1709879260",
+	"stations" : 
+	[
+		{
+			"deviceId" : "100133030000002",
+			"stationId" : 1709890694728,
+			"stationName" : "1floor_fire_enter",
+			"x" : "-3.93708",
+			"y" : "3.40094",
+			"yaw" : "-1.60728"
+		},
+		{
+			"deviceId" : "100133030000002",
+			"stationId" : 1709890731829,
+			"stationName" : "1floor_fire_exit",
+			"x" : "-3.89811",
+			"y" : "0.83464",
+			"yaw" : "-1.70357"
+		}
+	]
+}

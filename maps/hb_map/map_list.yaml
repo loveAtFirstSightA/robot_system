@@ -1,0 +1,33 @@
+-
+  map_id: 1709870483105
+  map_name: MAP_release1.4.3_0308_1709870471
+  map_building: 2栋
+  map_floor: 21
+  png_path: /home/lio/robot_system/maps/hb_map/1709870483105/MAP_release1.4.3_0308_1709870471.png
+  pgm_path: /home/lio/robot_system/maps/hb_map/1709870483105/MAP_release1.4.3_0308_1709870471.pgm
+  yaml_path: /home/lio/robot_system/maps/hb_map/1709870483105/MAP_release1.4.3_0308_1709870471.yaml
+  pbstream_path: /home/lio/robot_system/maps/hb_map/1709870483105/MAP_release1.4.3_0308_1709870471.pbstream
+  config_path: null
+  active: 1
+-
+  map_id: 1709877929284
+  map_name: MAP_19floor_release1.4.3_0308_1709877917
+  map_building: 2栋
+  map_floor: 19
+  png_path: /home/lio/robot_system/maps/hb_map/1709877929284/MAP_19floor_release1.4.3_0308_1709877917.png
+  pgm_path: /home/lio/robot_system/maps/hb_map/1709877929284/MAP_19floor_release1.4.3_0308_1709877917.pgm
+  yaml_path: /home/lio/robot_system/maps/hb_map/1709877929284/MAP_19floor_release1.4.3_0308_1709877917.yaml
+  pbstream_path: /home/lio/robot_system/maps/hb_map/1709877929284/MAP_19floor_release1.4.3_0308_1709877917.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1709879272326
+  map_name: MAP_1floor_release1.4.3_0308_1709879260
+  map_building: 2栋
+  map_floor: 1
+  png_path: /home/lio/robot_system/maps/hb_map/1709879272326/MAP_1floor_release1.4.3_0308_1709879260.png
+  pgm_path: /home/lio/robot_system/maps/hb_map/1709879272326/MAP_1floor_release1.4.3_0308_1709879260.pgm
+  yaml_path: /home/lio/robot_system/maps/hb_map/1709879272326/MAP_1floor_release1.4.3_0308_1709879260.yaml
+  pbstream_path: /home/lio/robot_system/maps/hb_map/1709879272326/MAP_1floor_release1.4.3_0308_1709879260.pbstream
+  config_path: null
+  active: 0

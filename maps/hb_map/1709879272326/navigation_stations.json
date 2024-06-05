@@ -1,0 +1,21 @@
+{
+	"mapId" : 1709879272326,
+	"mapName" : "MAP_1floor_release1.4.3_0308_1709879260",
+	"stations" : 
+	[
+		{
+			"stationId" : 1709890191942,
+			"stationName" : "1floor_nav_\u6c99\u53d1",
+			"x" : "-26.52333",
+			"y" : "11.05390",
+			"yaw" : "-0.10525"
+		},
+		{
+			"stationId" : 1709890237119,
+			"stationName" : "1floor_nav_\u5c55\u53f0",
+			"x" : "-14.49193",
+			"y" : "9.02593",
+			"yaw" : "-3.08489"
+		}
+	]
+}
