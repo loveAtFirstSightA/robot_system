@@ -29,3 +29,18 @@ How to launch gazebo simulation environment?
    	world_file:=small_warehouse.sdf \
    	robot_namespace:="bcr_bot"
    ```
+
+****
+The virtual robot of parameters
+
+Lidar
+   frequency 30HZ
+   33.33ms
+   
+Odometry
+   frequency 50HZ
+   20ms
+IMU
+   frequency 5HZ
+   200ms
+****
