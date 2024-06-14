@@ -1,0 +1,9 @@
+PurePursuit:
+  ros__parameters:
+    # 前视距离
+    lookaheaddist: 0.69
+    # 最大线速度
+    max_v: 0.5  
+    # 最大角速度
+    max_w: 1.57079
+    
