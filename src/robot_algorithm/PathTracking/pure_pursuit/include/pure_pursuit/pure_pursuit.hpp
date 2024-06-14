@@ -25,6 +25,7 @@
 #include "pure_pursuit/logger.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 
 namespace pure_pursuit
 {
@@ -49,18 +50,26 @@ public:
 private:
     void initParam();
     void initPath();
+    void initFirstValue();
+    double normalizeAngle(double angle);
     void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
+    void sendVelocity(const double v, const double w);
+    void displayCurveOnRviz2();
+    void timerCallback();
     
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
     double lookaheaddist_{0.15f};
     double max_v_{1.0f};
     double max_w_{M_PI_2};
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::TimerBase::SharedPtr timer_;
 
     // set paths
     std::vector<Line> line_;
     // set constant linear speed
-    double v_{0.2f};
+    double v_;
+    double w_;
 
 
 
