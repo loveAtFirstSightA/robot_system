@@ -1,7 +1,7 @@
 PurePursuit:
   ros__parameters:
     # 前视距离
-    lookaheaddist: 0.3
+    lookaheaddist: 0.5
     # 前视距离系数 Ld = k * v + Ld0
     k: 0.4
     # 最大线速度

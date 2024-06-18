@@ -145,7 +145,7 @@ void PurePursuit::displayCurveOnRviz2()
 
 void PurePursuit::initFirstValue()
 {
-     this->v_ = 0.0f;
+     this->v_ = 0.5f;
 }
 
 double PurePursuit::normalizeAngle(double angle)
@@ -225,7 +225,7 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
 
      // Step 3 差速类型的模型计算旋转半径R
      double r = lookaheaddistance / (2.0f * std::sin(alpha));
-     v_ = 0.2f;
+    
      // Step 4 v = w * r
      w_ = v_ / r;
 
