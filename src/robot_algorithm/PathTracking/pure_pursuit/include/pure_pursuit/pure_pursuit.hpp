@@ -29,17 +29,23 @@
 
 namespace pure_pursuit
 {
-
+struct Vector {
+    double vx;
+    double vy;
+};
+struct Pose {
+    double x;
+    double y;
+    double yaw;
+};
 struct Point {
     double x;   //  位置x
     double y;   //  位置y
 };
-
 struct Line {
     Point start;
     Point end;
 };
-
 
 class PurePursuit : public rclcpp::Node
 {
@@ -58,7 +64,8 @@ private:
     void timerCallback();
     
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
-    double lookaheaddist_{0.15f};
+    double lookaheaddist_{0.0f};
+    double k_{0.0f};
     double max_v_{1.0f};
     double max_w_{M_PI_2};
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
