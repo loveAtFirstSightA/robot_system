@@ -20,12 +20,31 @@ namespace path_tool
 {
 PathTool::PathTool() : Node ("path_tool")
 {
-
+     timer_ = this->create_wall_timer(
+          std::chrono::seconds(1),
+          std::bind(&PathTool::timerCallback, this));
+     paths_pub_ = this->create_publisher<algorithm_msgs::msg::Path>(
+          "algorithm_path",
+          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 }
 
 PathTool::~PathTool() {}
 
+void PathTool::timerCallback()
+{
+     // 初始化路径
+     // 显示路径到rviz2
+}
 
+bool PathTool::initPaths()
+{
+     // 初始化路径信息
+
+
+
+
+     return true;
+}
 
 
 }  // namespace path_tool

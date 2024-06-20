@@ -18,6 +18,7 @@
 #define PATH_TOOL__PATH_TOOL_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "algorithm_msgs/msg/path.hpp"
 
 namespace path_tool
 {
@@ -28,7 +29,11 @@ public:
     ~PathTool();
 
 private:
-
+    bool initPaths();
+    void timerCallback();
+    
+    rclcpp::Publisher<algorithm_msgs::msg::Path>::SharedPtr paths_pub_;
+    rclcpp::TimerBase::SharedPtr timer_;
 };
 }  // namespace path_tool
 #endif  // PATH_TOOL__PATH_TOOL_HPP_
