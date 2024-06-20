@@ -1,12 +1,16 @@
-[submodule "src/bcr_bot"]
-	path = src/bcr_bot
-	url = https://github.com/blackcoffeerobotics/bcr_bot.git
 [submodule "src/library/csm"]
 	path = src/library/csm
 	url = https://github.com/AlexKaravaev/csm.git
 [submodule "src/library/ros2_laser_scan_matcher"]
 	path = src/library/ros2_laser_scan_matcher
 	url = https://github.com/AlexKaravaev/ros2_laser_scan_matcher.git
-[submodule "src/bcr_teleop"]
-	path = src/bcr_teleop
+[submodule "src/blackcoffeerobotics/bcr_bot"]
+	path = src/blackcoffeerobotics/bcr_bot
+	url = https://github.com/blackcoffeerobotics/bcr_bot.git
+[submodule "src/blackcoffeerobotics/bcr_teleop"]
+	path = src/blackcoffeerobotics/bcr_teleop
 	url = https://github.com/blackcoffeerobotics/bcr_teleop.git
+[submodule "src/blackcoffeerobotics/bcr_bot/"]
+	branch = ros2
+[submodule "src/blackcoffeerobotics/bcr_teleop/"]
+	branch = ros2
