@@ -14,6 +14,9 @@
  limitations under the License.
  */
 
+// How to use this executable program
+// nohup ./data_recorder > data_recorder_2024_0620_0000.txt 2>&1 &
+
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
