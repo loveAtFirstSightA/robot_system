@@ -1,0 +1,3 @@
+# total paths
+
+PathSegment[] segments
