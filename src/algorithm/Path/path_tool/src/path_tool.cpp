@@ -26,7 +26,7 @@ PathTool::PathTool() : Node ("path_tool")
      path_pub_ = this->create_publisher<algorithm_msgs::msg::Path>(
           "algorithm_path",
           rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-     path_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
+     path_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
         "paths_net",
         rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 }
@@ -34,18 +34,24 @@ PathTool::PathTool() : Node ("path_tool")
 PathTool::~PathTool() {}
 
 void PathTool::timerCallback()
-{
+{    
+     // step 1 初始化路网
      initPath();
+     // step 2 发布路网信息
+     // sendPathToAlgorithm();
+     // step 3 离散化路网信息为短直线段
+     convertPathToPoints();
+     // step 4 显示路网
      displayCurveOnRviz2();
-     sendPathToAlgorithm();
-     timer_->cancel();
+     // step 5 取消定时器
+     // timer_->cancel();
 }
 
 void PathTool::initPath()
 {
      // 初始化路径信息
-     unsigned int path_nte_type = 0;
-     // unsigned int path_nte_type = 1;
+     // unsigned int path_nte_type = 0;
+     unsigned int path_nte_type = 1;
      switch (path_nte_type) {
           case 0: {
                // 闭环 直线
@@ -157,20 +163,22 @@ void PathTool::initPath()
 void PathTool::displayCurveOnRviz2()
 {
      // 创建Marker消息
-     auto msg = visualization_msgs::msg::Marker();
-     msg.header.frame_id = "map"; // 根据您的实际frame_id进行设置
-     msg.header.stamp = this->now(); // 当前时间
-     msg.ns = "path";
-     msg.id = 0;
-     msg.type = visualization_msgs::msg::Marker::LINE_STRIP;
-     msg.action = visualization_msgs::msg::Marker::ADD;
+     auto msg = visualization_msgs::msg::MarkerArray();
+     visualization_msgs::msg::Marker marker;
+     marker.header.frame_id = "map"; // 根据您的实际frame_id进行设置
+     marker.header.stamp = this->now(); // 当前时间
+     marker.ns = "path";
+     marker.id = 0;
+     marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+     marker.action = visualization_msgs::msg::Marker::ADD;
 
      // 设置Marker的比例和颜色
-     msg.scale.x = 0.05; // 线宽
-     msg.color.r = 0.0; // 红色
-     msg.color.g = 1.0; // 绿色
-     msg.color.b = 0.0; // 蓝色
-     msg.color.a = 1.0; // 透明度
+     marker.scale.x = 0.05; // 线宽
+     marker.color.r = 0.0; // 红色
+     marker.color.g = 1.0; // 绿色
+     marker.color.b = 0.0; // 蓝色
+     marker.color.a = 1.0; // 透明度
+
 
      // 从path_中提取路径的各个点
      for (const auto& segment : path_.segments)
@@ -266,6 +274,13 @@ void PathTool::sendPathToAlgorithm()
      auto msg = algorithm_msgs::msg::Path();
      msg = path_;
      path_pub_->publish(msg);
+}
+
+void PathTool::convertPathToPoints()
+{
+     for (size_t i = 0; i < path_.segments.size(); i ++) {
+          
+     }    
 }
 
 

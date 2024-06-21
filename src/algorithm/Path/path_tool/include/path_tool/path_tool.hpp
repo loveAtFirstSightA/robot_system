@@ -20,7 +20,8 @@
 #include <vector>
 #include "rclcpp/rclcpp.hpp"
 #include "algorithm_msgs/msg/path.hpp"
-#include "visualization_msgs/msg/marker.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
+#include "geometry_msgs/msg/point.hpp"
 
 namespace path_tool
 {
@@ -35,11 +36,15 @@ private:
     void timerCallback();
     void displayCurveOnRviz2();
     void sendPathToAlgorithm();
-    
+    void convertPathToPoints();
+
     rclcpp::Publisher<algorithm_msgs::msg::Path>::SharedPtr path_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr path_marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_marker_pub_;
     algorithm_msgs::msg::Path path_;
+
+    std::vector<geometry_msgs::msg::Point> points_; // path points
+
 };
 }  // namespace path_tool
 #endif  // PATH_TOOL__PATH_TOOL_HPP_
