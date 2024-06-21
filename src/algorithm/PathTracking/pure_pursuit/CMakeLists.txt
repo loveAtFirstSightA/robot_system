@@ -18,7 +18,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
+find_package(algorithm_msgs REQUIRED)
 
 include_directories(include)
 
@@ -30,7 +30,7 @@ set(dependencies
   rclcpp
   std_msgs
   geometry_msgs
-  visualization_msgs
+  algorithm_msgs
 )
 
 add_library(${library_name} src/pure_pursuit.cpp)

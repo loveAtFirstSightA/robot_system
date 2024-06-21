@@ -27,38 +27,24 @@ namespace pure_pursuit
 {
 PurePursuit::PurePursuit() : Node("PurePursuit")
 {
-     // 初始化路径信息
-     initPath();
-     // 初始化参数信息
      initParam();
-     // 初始化初值
      initFirstValue();
-     // 当前车体中心的位姿
      current_pose_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
           "estimate_pose",
           rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
           std::bind(&PurePursuit::currentPoseCallback, this, std::placeholders::_1));
-     // 显示直线路径
-     marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
-          "path_marker",
-          10);
-     // 目标速度
+     path_sub_ = this->create_subscription<algorithm_msgs::msg::Path>(
+          "algorithm_path",
+          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
+          std::bind(&PurePursuit::pathSubCallback, this, std::placeholders::_1));
      vel_ = this->create_publisher<geometry_msgs::msg::Twist>(
           "cmd_vel",
           10);
-     timer_ = this->create_wall_timer(
-          std::chrono::seconds(1),
-          std::bind(&PurePursuit::timerCallback, this));
 }
 
 PurePursuit::~PurePursuit() 
 {
      sendVelocity(0.0f, 0.0f);
-}
-
-void PurePursuit::timerCallback()
-{
-     displayCurveOnRviz2();
 }
 
 void PurePursuit::initParam()
@@ -79,70 +65,6 @@ void PurePursuit::initParam()
      std::cout << getCurrentTime() << "    max_w: " << max_w_ << std::endl;
 }
 
-void PurePursuit::initPath()
-{
-     // Initialize path information
-     unsigned int line_sum = 4;
-     line_.clear();
-     line_.resize(line_sum);
-     line_[0].start.x = 1.76f;
-     line_[0].start.y = 0.0f;
-     line_[0].end.x = 1.76f;
-     line_[0].end.y = -9.45f;
-
-     line_[1].start.x = 1.76f;
-     line_[1].start.y = -9.45f;
-     line_[1].end.x = -3.75f;
-     line_[1].end.y = -9.45f;
-
-     line_[2].start.x = -3.75f;
-     line_[2].start.y = -9.45f;
-     line_[2].end.x = -3.75f;
-     line_[2].end.y = 0.0f;
-
-     line_[3].start.x = -3.75f;
-     line_[3].start.y = 0.0f;
-     line_[3].end.x = 1.76f;
-     line_[3].end.y = 0.0f;
-     std::cout << getCurrentTime() << "Created fixed paths" << std::endl;
-     for (size_t i = 0; i < line_.size(); i++) {
-          std::cout << getCurrentTime() << "    line " << i << " [" << line_[i].start.x << ", " << line_[i].start.y << "] --- [" 
-               << line_[i].end.x << ", " << line_[i].end.y << "]" << std::endl;
-     }
-}
-
-void PurePursuit::displayCurveOnRviz2()
-{
-     for (size_t i = 0; i < line_.size(); i++) {
-          visualization_msgs::msg::Marker line_marker;
-          line_marker.header.frame_id = "map";
-          line_marker.header.stamp = this->get_clock()->now();
-          line_marker.ns = "lines";
-          line_marker.id = i;
-          line_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
-          line_marker.action = visualization_msgs::msg::Marker::ADD;
-          line_marker.scale.x = 0.05; // Line width
-          line_marker.color.r = 0.0;
-          line_marker.color.g = 0.0;
-          line_marker.color.b = 1.0;
-          line_marker.color.a = 1.0;
-
-          geometry_msgs::msg::Point p_start, p_end;
-          p_start.x = line_[i].start.x;
-          p_start.y = line_[i].start.y;
-          p_start.z = 0.0; // Assume flat ground
-
-          p_end.x = line_[i].end.x;
-          p_end.y = line_[i].end.y;
-          p_end.z = 0.0; // Assume flat ground
-
-          line_marker.points.push_back(p_start);
-          line_marker.points.push_back(p_end);
-
-          marker_pub_->publish(line_marker);
-     }
-}
-
 void PurePursuit::initFirstValue()
 {
      this->v_ = 0.5f;
@@ -150,7 +72,6 @@ void PurePursuit::initFirstValue()
 
 double PurePursuit::normalizeAngle(double angle)
 {
-     
      while (angle > M_PI) {
           angle -= 2.0f * M_PI;
      }
@@ -163,6 +84,11 @@ double PurePursuit::normalizeAngle(double angle)
 // main function of purepursuit algorithm 
 void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
 {
+     if (!is_path_received_) {
+          std::cout << getCurrentTime() << "path is empty, return" << std::endl;
+          return;
+     }
+
      Pose current;
      current.x = msg->vector.x;
      current.y = msg->vector.y;
@@ -241,7 +167,19 @@ void PurePursuit::sendVelocity(const double v, const double w)
      vel_->publish(msg);
 }
 
-
+void PurePursuit::pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg)
+{
+     path_ = *msg;
+     line_.resize(path_.segments.size());
+     for (size_t i = 0; i < line_.size(); i++) {
+          line_[i].start.x = path_.segments[i].line.p0.x;
+          line_[i].start.y = path_.segments[i].line.p0.y;
+          line_[i].end.x = path_.segments[i].line.p1.x;
+          line_[i].end.y = path_.segments[i].line.p1.y;
+     }
+     
+     is_path_received_ = true;
+}
 
 
 }  // namespace pure_pursuit

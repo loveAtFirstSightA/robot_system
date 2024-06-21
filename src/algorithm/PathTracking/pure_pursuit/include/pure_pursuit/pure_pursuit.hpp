@@ -25,7 +25,7 @@
 #include "pure_pursuit/logger.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "visualization_msgs/msg/marker.hpp"
+#include "algorithm_msgs/msg/path.hpp"
 
 namespace pure_pursuit
 {
@@ -60,8 +60,7 @@ private:
     double normalizeAngle(double angle);
     void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void sendVelocity(const double v, const double w);
-    void displayCurveOnRviz2();
-    void timerCallback();
+    void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
     
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
     double lookaheaddist_{0.0f};
@@ -69,8 +68,7 @@ private:
     double max_v_{1.0f};
     double max_w_{M_PI_2};
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
-    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
 
     // set paths
     std::vector<Line> line_;
@@ -78,9 +76,9 @@ private:
     double v_;
     double w_;
 
-
-
-
+    bool is_path_received_{false};
+    algorithm_msgs::msg::Path path_;
+    
 
 };
 }  // namespace pure_pursuit

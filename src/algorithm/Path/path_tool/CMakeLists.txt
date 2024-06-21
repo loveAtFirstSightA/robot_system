@@ -17,6 +17,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(algorithm_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 set(executable_name path_tool)
 
@@ -25,6 +26,7 @@ set(library_name ${executable_name}_core)
 set(dependencies
   rclcpp
   algorithm_msgs
+  visualization_msgs
 )
 
 add_library(${library_name} src/path_tool.cpp)
