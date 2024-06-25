@@ -93,54 +93,48 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
      current.x = msg->vector.x;
      current.y = msg->vector.y;
      current.yaw = msg->vector.z;
-
-     // 切换路径跟踪逻辑,若是当前点与路径终点的距离小于前视距离，则使用下一条路径
-     // 目标路径是四条直线路径（闭环矩形框）
+     // 切换路径
      static unsigned int path_number = 0;
-     double error_x = std::pow(line_[path_number].end.x - current.x, 2);
-     double error_y = std::pow(line_[path_number].end.y - current.y, 2);
+     Pose path_end;
+     if (path_.segments[path_number].type == path_.segments[path_number].LINE) {
+          path_end.x = path_.segments[path_number].line.p1.x;
+          path_end.y = path_.segments[path_number].line.p1.y;
+     } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER3) {
+          path_end.x = path_.segments[path_number].bezier3.p3.x;
+          path_end.y = path_.segments[path_number].bezier3.p3.y;
+     } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
+          path_end.x = path_.segments[path_number].bezier5.p5.x;
+          path_end.y = path_.segments[path_number].bezier5.p5.y;
+     }
+     double error_x = std::pow(path_end.x - current.x, 2);
+     double error_y = std::pow(path_end.y - current.y, 2);
      double error_dist = std::sqrt(error_x + error_y);
-
      if (error_dist < lookaheaddist_) {
           path_number ++;
-          if (path_number >= line_.size()) {
+          if (path_number >= path_.segments.size()) {
                path_number = 0;
           }
           std::cout << getCurrentTime() << "Tracking path number: " << path_number << std::endl;
      }
 
-     // Pure Pursuit algorithm
-     // Step 1 根据前视距离计算路径上的目标点
-     Point target;
-     Point closest;
-     // Step 1.1 计算当前点到直线的最近点(投影比例系数)
-     // 向量B Ps->Pe
-     double vx_ps_pe = line_[path_number].end.x - line_[path_number].start.x;
-     double vy_ps_pe = line_[path_number].end.y - line_[path_number].start.y;
-     // 向量A Ps->Current
-     double vx_ps_curr = current.x - line_[path_number].start.x;
-     double vy_ps_curr = current.y - line_[path_number].start.y;
-     // |B| * |B|
-     double length_square = std::pow(vx_ps_pe, 2) + std::pow(vy_ps_pe, 2);
-     // 计算投影比例系数 t
-     double t = vx_ps_pe * vx_ps_curr + vy_ps_pe * vy_ps_curr / length_square;
-     // 限制t范围[0, 1]
-     closest.x = line_[path_number].start.x + t * vx_ps_pe;
-     closest.y = line_[path_number].start.y + t * vy_ps_pe;
-     // Step 1.2 
-     // 路径向量长度
-     double path_length = std::sqrt(vx_ps_pe * vx_ps_pe + vy_ps_pe * vy_ps_pe);
-     // 单位向量
-     double path_ux = vx_ps_pe / path_length; 
-     double path_uy = vy_ps_pe / path_length;
-     
-     // 前视距离参数
+     // 前视距离
      double lookaheaddistance = k_ * v_ + lookaheaddist_;
 
-     // 目标点 = 当前点 + 前视距离 * 单位向量
-     target.x = closest.x + lookaheaddistance * path_ux;
-     target.y = closest.y + lookaheaddistance * path_uy;
-     std::cout << getCurrentTime() << "clost:[" << closest.x << ", " << closest.y << ", target:[" << target.x << ", " << target.y << "]" << std::endl;
+     Pose target;
+     // Step 1 基于前视距离和当前位置计算不同类型曲线的目标点
+     if (path_.segments[path_number].type == path_.segments[path_number].LINE) {
+          // 计算直线上的目标点
+          calculateTargetOnLine(target, lookaheaddistance, current, path_.segments[path_number].line);
+          
+     } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER3) {
+          // 计算bezier3上的目标点
+          calculateTargetOnBezier3(target, lookaheaddistance, current, path_.segments[path_number].bezier3);
+
+     } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
+          // 计算bezier5上的目标点
+          calculateTargetOnBezier5(target, lookaheaddistance, current, path_.segments[path_number].bezier5);
+     }
+
      // Step 2 根据当前点 目标点 当前角度 确定角度alpha
      double ld_vx = target.x - current.x;
      double ld_vy = target.y - current.y;
@@ -154,8 +148,21 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
     
      // Step 4 v = w * r
      w_ = v_ / r;
-
      std::cout << getCurrentTime() << "r: " << r << ", w: " << w_ << std::endl;
+
+     //  安全限制
+     if (fabs(v_) > max_v_) {
+          v_ = 0.0f;
+          std::cout << getCurrentTime() << "Anomaly detected: v_" << std::endl;
+     }
+     if (fabs(w_) > max_w_) {
+          w_ = 0.0f;
+          std::cout << getCurrentTime() << "Anomaly detected: w_" << std::endl;
+     }
+     if (std::isinf(r) || std::isnan(r)) {
+          w_ = 0.0f;
+          v_ = 0.0f;
+     }
      sendVelocity(v_, w_);
 }
 
@@ -170,15 +177,51 @@ void PurePursuit::sendVelocity(const double v, const double w)
 void PurePursuit::pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg)
 {
      path_ = *msg;
-     line_.resize(path_.segments.size());
-     for (size_t i = 0; i < line_.size(); i++) {
-          line_[i].start.x = path_.segments[i].line.p0.x;
-          line_[i].start.y = path_.segments[i].line.p0.y;
-          line_[i].end.x = path_.segments[i].line.p1.x;
-          line_[i].end.y = path_.segments[i].line.p1.y;
-     }
-     
      is_path_received_ = true;
+}
+
+void PurePursuit::calculateTargetOnLine(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Line line)
+{
+     // Step 1 计算最近点
+     Pose closest;
+     Vector ps_pc; // 直线起点至当前位置的向量
+     Vector ps_pe; // 直线起点至直线终点的向量
+     ps_pc.vx = current.x - line.p0.x;
+     ps_pc.vy = current.y - line.p0.y;
+     ps_pe.vx = line.p1.x - line.p0.x;
+     ps_pe.vy = line.p1.y - line.p0.y;
+     double ps_pe_square_length = std::pow(ps_pe.vx, 2) + std::pow(ps_pe.vy, 2);
+     double t = ps_pc.vx * ps_pe.vx + ps_pc.vy * ps_pe.vy / ps_pe_square_length;
+     if (t > 1.0f) {
+          t = 1.0f;
+     } else if (t < 0.0f) {
+          t = 0.0f;
+     }
+     closest.x = line.p0.x + t * ps_pe.vx;
+     closest.y = line.p0.y + t * ps_pe.vy;
+
+     // Step 2 计算单位向量
+     double line_length = std::sqrt(ps_pe_square_length);
+     Vector unit_vector_line;
+     unit_vector_line.vx = ps_pe.vx / line_length;
+     unit_vector_line.vy = ps_pe.vy / line_length;
+
+     // Step 3 当前点到直线的最近的点 + 前视距离 * 单位向量
+     target.x = closest.x + lookahead * unit_vector_line.vx;
+     target.y = closest.y + lookahead * unit_vector_line.vy;
+
+     std::cout << getCurrentTime() << "Current: [ x" << current.x << ", y " << current.y << "]"
+          << " target: [x " << target.x << ", y" << target.y << "]" << std::endl;
+}
+
+void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3)
+{
+
+}
+
+void PurePursuit::calculateTargetOnBezier5(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier5 bezier5)
+{
+
 }
 
 

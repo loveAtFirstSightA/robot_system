@@ -26,6 +26,9 @@
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "algorithm_msgs/msg/path.hpp"
+#include "algorithm_msgs/msg/line.hpp"
+#include "algorithm_msgs/msg/bezier3.hpp"
+#include "algorithm_msgs/msg/bezier5.hpp"
 
 namespace pure_pursuit
 {
@@ -38,15 +41,6 @@ struct Pose {
     double y;
     double yaw;
 };
-struct Point {
-    double x;   //  位置x
-    double y;   //  位置y
-};
-struct Line {
-    Point start;
-    Point end;
-};
-
 class PurePursuit : public rclcpp::Node
 {
 public:
@@ -55,12 +49,14 @@ public:
 
 private:
     void initParam();
-    void initPath();
     void initFirstValue();
     double normalizeAngle(double angle);
     void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
+    void calculateTargetOnLine(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Line line);
+    void calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3);
+    void calculateTargetOnBezier5(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier5 bezier5);
     
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
     double lookaheaddist_{0.0f};
@@ -70,15 +66,11 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
     rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
 
-    // set paths
-    std::vector<Line> line_;
-    // set constant linear speed
     double v_;
     double w_;
 
     bool is_path_received_{false};
     algorithm_msgs::msg::Path path_;
-    
 
 };
 }  // namespace pure_pursuit

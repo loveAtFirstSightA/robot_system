@@ -37,13 +37,16 @@ private:
     void displayCurveOnRviz2();
     void sendPathToAlgorithm();
     void convertPathToPoints();
+    void convertLineToPoints(const algorithm_msgs::msg::Line& line, std::vector<geometry_msgs::msg::Point>& points, double step = 0.1);
+    void convertBezier3ToPoints(const algorithm_msgs::msg::Bezier3& bezier, std::vector<geometry_msgs::msg::Point>& points, double step = 0.01);
+    void convertBezier5ToPoints(const algorithm_msgs::msg::Bezier5& bezier, std::vector<geometry_msgs::msg::Point>& points, double step = 0.01);
 
     rclcpp::Publisher<algorithm_msgs::msg::Path>::SharedPtr path_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_marker_pub_;
     algorithm_msgs::msg::Path path_;
 
-    std::vector<geometry_msgs::msg::Point> points_; // path points
+    std::vector<std::vector<geometry_msgs::msg::Point>> paths_points_;
 
 };
 }  // namespace path_tool

@@ -38,7 +38,7 @@ void PathTool::timerCallback()
      // step 1 初始化路网
      initPath();
      // step 2 发布路网信息
-     // sendPathToAlgorithm();
+     sendPathToAlgorithm();
      // step 3 离散化路网信息为短直线段
      convertPathToPoints();
      // step 4 显示路网
@@ -135,12 +135,12 @@ void PathTool::initPath()
                path_.segments[5].bezier3.p3.x = 1.768;
                path_.segments[5].bezier3.p3.y = -6.403;
 
-               // 直线: [1.768, -9.403] -> [1.768, -6.403]
+               // 直线: [1.768, -6.403] -> [1.768, -0.455]
                path_.segments[6].type = path_.segments[6].LINE;
                path_.segments[6].line.p0.x = 1.768;
-               path_.segments[6].line.p0.y = -9.403;
+               path_.segments[6].line.p0.y = -6.403;
                path_.segments[6].line.p1.x = 1.768;
-               path_.segments[6].line.p1.y = -6.403;
+               path_.segments[6].line.p1.y = -0.455;
 
                // 三阶贝塞尔: [1.768, -0.455], [1.768, 2.02], [0.865, 2.02], [0.865, 4.495]
                path_.segments[7].type = path_.segments[7].BEZIER3;
@@ -179,91 +179,18 @@ void PathTool::displayCurveOnRviz2()
      marker.color.b = 0.0; // 蓝色
      marker.color.a = 1.0; // 透明度
 
-
-     // 从path_中提取路径的各个点
-     for (const auto& segment : path_.segments)
-     {
-          if (segment.type == segment.LINE)
-          {
-               geometry_msgs::msg::Point p0;
-               p0.x = segment.line.p0.x;
-               p0.y = segment.line.p0.y;
-               p0.z = 0.0;
-               msg.points.push_back(p0);
-
-               geometry_msgs::msg::Point p1;
-               p1.x = segment.line.p1.x;
-               p1.y = segment.line.p1.y;
-               p1.z = 0.0;
-               msg.points.push_back(p1);
-          }
-          else if (segment.type == segment.BEZIER3)
-          {
-               // 添加贝塞尔曲线的控制点
-               geometry_msgs::msg::Point p0;
-               p0.x = segment.bezier3.p0.x;
-               p0.y = segment.bezier3.p0.y;
-               p0.z = 0.0;
-               msg.points.push_back(p0);
-
-               geometry_msgs::msg::Point p1;
-               p1.x = segment.bezier3.p1.x;
-               p1.y = segment.bezier3.p1.y;
-               p1.z = 0.0;
-               msg.points.push_back(p1);
-
-               geometry_msgs::msg::Point p2;
-               p2.x = segment.bezier3.p2.x;
-               p2.y = segment.bezier3.p2.y;
-               p2.z = 0.0;
-               msg.points.push_back(p2);
-
-               geometry_msgs::msg::Point p3;
-               p3.x = segment.bezier3.p3.x;
-               p3.y = segment.bezier3.p3.y;
-               p3.z = 0.0;
-               msg.points.push_back(p3);
-          }
-          else if (segment.type == segment.BEZIER5)
-          {
-               // 添加五阶贝塞尔曲线的控制点
-               geometry_msgs::msg::Point p0;
-               p0.x = segment.bezier5.p0.x;
-               p0.y = segment.bezier5.p0.y;
-               p0.z = 0.0;
-               msg.points.push_back(p0);
-
-               geometry_msgs::msg::Point p1;
-               p1.x = segment.bezier5.p1.x;
-               p1.y = segment.bezier5.p1.y;
-               p1.z = 0.0;
-               msg.points.push_back(p1);
-
-               geometry_msgs::msg::Point p2;
-               p2.x = segment.bezier5.p2.x;
-               p2.y = segment.bezier5.p2.y;
-               p2.z = 0.0;
-               msg.points.push_back(p2);
-
-               geometry_msgs::msg::Point p3;
-               p3.x = segment.bezier5.p3.x;
-               p3.y = segment.bezier5.p3.y;
-               p3.z = 0.0;
-               msg.points.push_back(p3);
-
-               geometry_msgs::msg::Point p4;
-               p4.x = segment.bezier5.p4.x;
-               p4.y = segment.bezier5.p4.y;
-               p4.z = 0.0;
-               msg.points.push_back(p4);
-
-               geometry_msgs::msg::Point p5;
-               p5.x = segment.bezier5.p5.x;
-               p5.y = segment.bezier5.p5.y;
-               p5.z = 0.0;
-               msg.points.push_back(p5);
+     for (const auto& segment_points : paths_points_) {
+          for (const auto& point : segment_points) {
+               geometry_msgs::msg::Point p;
+               p.x = point.x;
+               p.y = point.y;
+               p.z = point.z; // 假设paths_points_中的点包含z坐标
+               marker.points.push_back(p);
           }
      }
+
+     // 将Marker添加到MarkerArray
+     msg.markers.push_back(marker);
 
      // 发布Marker消息
      path_marker_pub_->publish(msg);
@@ -278,9 +205,62 @@ void PathTool::sendPathToAlgorithm()
 
 void PathTool::convertPathToPoints()
 {
-     for (size_t i = 0; i < path_.segments.size(); i ++) {
-          
-     }    
+     paths_points_.clear();
+     paths_points_.resize(path_.segments.size());
+
+     for (size_t i = 0; i < path_.segments.size(); i++) {
+          if (path_.segments[i].type == path_.segments[i].LINE) {
+               convertLineToPoints(path_.segments[i].line, paths_points_[i]);
+          }
+          if (path_.segments[i].type == path_.segments[i].BEZIER3) {
+               convertBezier3ToPoints(path_.segments[i].bezier3, paths_points_[i]);
+          }
+          if (path_.segments[i].type == path_.segments[i].BEZIER5) {
+               convertBezier5ToPoints(path_.segments[i].bezier5, paths_points_[i]);
+          }
+     }
+}
+
+
+
+void PathTool::convertLineToPoints(const algorithm_msgs::msg::Line& line, std::vector<geometry_msgs::msg::Point>& points, double step)
+{
+     double dx = line.p1.x - line.p0.x;
+     double dy = line.p1.y - line.p0.y;
+     double length = sqrt(dx * dx + dy * dy);
+     int num_steps = static_cast<int>(length / step);
+
+     for (int i = 0; i <= num_steps; ++i) {
+          geometry_msgs::msg::Point point;
+          point.x = line.p0.x + dx * i / num_steps;
+          point.y = line.p0.y + dy * i / num_steps;
+          point.z = 0; // 假设z坐标为0，因为algorithm_msgs::msg::Point结构中没有z
+          points.push_back(point);
+     }
+}
+
+void PathTool::convertBezier3ToPoints(const algorithm_msgs::msg::Bezier3& bezier, std::vector<geometry_msgs::msg::Point>& points, double step)
+{
+     for (double t = 0.0; t <= 1.0; t += step) {
+          geometry_msgs::msg::Point point;
+          double u = 1 - t;
+          point.x = u * u * u * bezier.p0.x + 3 * u * u * t * bezier.p1.x + 3 * u * t * t * bezier.p2.x + t * t * t * bezier.p3.x;
+          point.y = u * u * u * bezier.p0.y + 3 * u * u * t * bezier.p1.y + 3 * u * t * t * bezier.p2.y + t * t * t * bezier.p3.y;
+          point.z = 0; // 假设z坐标为0，因为algorithm_msgs::msg::Point结构中没有z
+          points.push_back(point);
+     }
+}
+
+void PathTool::convertBezier5ToPoints(const algorithm_msgs::msg::Bezier5& bezier, std::vector<geometry_msgs::msg::Point>& points, double step)
+{
+     for (double t = 0.0; t <= 1.0; t += step) {
+          geometry_msgs::msg::Point point;
+          double u = 1 - t;
+          point.x = pow(u, 5) * bezier.p0.x + 5 * pow(u, 4) * t * bezier.p1.x + 10 * pow(u, 3) * t * t * bezier.p2.x + 10 * pow(u, 2) * t * t * t * bezier.p3.x + 5 * u * t * t * t * t * bezier.p4.x + t * t * t * t * t * bezier.p5.x;
+          point.y = pow(u, 5) * bezier.p0.y + 5 * pow(u, 4) * t * bezier.p1.y + 10 * pow(u, 3) * t * t * bezier.p2.y + 10 * pow(u, 2) * t * t * t * bezier.p3.y + 5 * u * t * t * t * t * bezier.p4.y + t * t * t * t * t * bezier.p5.y;
+          point.z = 0; // 假设z坐标为0，因为algorithm_msgs::msg::Point结构中没有z
+          points.push_back(point);
+     }
 }
 
 
