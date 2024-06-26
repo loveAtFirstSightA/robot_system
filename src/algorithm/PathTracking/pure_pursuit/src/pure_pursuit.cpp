@@ -214,14 +214,94 @@ void PurePursuit::calculateTargetOnLine(Pose & target, const double lookahead, c
           << " target: [x " << target.x << ", y" << target.y << "]" << std::endl;
 }
 
-void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3)
+void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3) 
 {
+     // 贝塞尔曲线控制点
+     auto & P0 = bezier3.p0;
+     auto & P1 = bezier3.p1;
+     auto & P2 = bezier3.p2;
+     auto & P3 = bezier3.p3;
 
+     // 用于找到最接近lookahead距离的点
+     Pose closestPoint;
+     double closestDistance = std::numeric_limits<double>::max();
+
+     // 迭代t从0到1,寻找与lookahead距离最接近的点
+     int steps = 100; // 可调整步数
+     for (int i = 0; i <= steps; ++i) {
+          double t = static_cast<double>(i) / steps;
+
+          // 计算贝塞尔曲线上的点
+          double x = std::pow(1 - t, 3) * P0.x +
+                    3 * std::pow(1 - t, 2) * t * P1.x +
+                    3 * (1 - t) * std::pow(t, 2) * P2.x +
+                    std::pow(t, 3) * P3.x;
+
+          double y = std::pow(1 - t, 3) * P0.y +
+                    3 * std::pow(1 - t, 2) * t * P1.y +
+                    3 * (1 - t) * std::pow(t, 2) * P2.y +
+                    std::pow(t, 3) * P3.y;
+
+          Pose pointOnBezier = {x, y, 0.0}; // 假设Pose的yaw坐标为0
+
+          double dist = distance(current, pointOnBezier);
+
+          // 找到距离current等于lookahead的点
+          if (std::abs(dist - lookahead) < closestDistance) {
+               closestDistance = std::abs(dist - lookahead);
+               closestPoint = pointOnBezier;
+          }
+     }
+
+     target = closestPoint;
 }
 
-void PurePursuit::calculateTargetOnBezier5(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier5 bezier5)
+void PurePursuit::calculateTargetOnBezier5(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier5 bezier5) 
 {
+     // 贝塞尔曲线控制点
+     auto & P0 = bezier5.p0;
+     auto & P1 = bezier5.p1;
+     auto & P2 = bezier5.p2;
+     auto & P3 = bezier5.p3;
+     auto & P4 = bezier5.p4;
+     auto & P5 = bezier5.p5;
 
+     // 用于找到最接近lookahead距离的点
+     Pose closestPoint;
+     double closestDistance = std::numeric_limits<double>::max();
+
+     // 迭代t从0到1,寻找与lookahead距离最接近的点
+     int steps = 100; // 可调整步数
+     for (int i = 0; i <= steps; ++i) {
+          double t = static_cast<double>(i) / steps;
+
+          // 计算贝塞尔曲线上的点
+          double x = std::pow(1 - t, 5) * P0.x +
+                    5 * std::pow(1 - t, 4) * t * P1.x +
+                    10 * std::pow(1 - t, 3) * std::pow(t, 2) * P2.x +
+                    10 * std::pow(1 - t, 2) * std::pow(t, 3) * P3.x +
+                    5 * (1 - t) * std::pow(t, 4) * P4.x +
+                    std::pow(t, 5) * P5.x;
+
+          double y = std::pow(1 - t, 5) * P0.y +
+                    5 * std::pow(1 - t, 4) * t * P1.y +
+                    10 * std::pow(1 - t, 3) * std::pow(t, 2) * P2.y +
+                    10 * std::pow(1 - t, 2) * std::pow(t, 3) * P3.y +
+                    5 * (1 - t) * std::pow(t, 4) * P4.y +
+                    std::pow(t, 5) * P5.y;
+
+          Pose pointOnBezier = {x, y, 0.0}; // 假设Pose的yaw坐标为0
+
+          double dist = distance(current, pointOnBezier);
+
+          // 找到距离current等于lookahead的点
+          if (std::abs(dist - lookahead) < closestDistance) {
+               closestDistance = std::abs(dist - lookahead);
+               closestPoint = pointOnBezier;
+          }
+     }
+
+     target = closestPoint;
 }
 
 
