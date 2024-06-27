@@ -52,106 +52,114 @@ void PathTool::initPath()
      // 初始化路径信息
      // unsigned int path_nte_type = 0;
      unsigned int path_nte_type = 1;
+     // unsigned int path_nte_type = 2;
      switch (path_nte_type) {
           case 0: {
                // 闭环 直线
                path_.segments.resize(4);
                path_.segments[0].type = path_.segments[0].LINE;
-               path_.segments[0].line.p0.x = 1.7701;
-               path_.segments[0].line.p0.y = -0.2498;
-               path_.segments[0].line.p1.x = -3.7087;
-               path_.segments[0].line.p1.y = -0.2661;
+               path_.segments[0].line.p0.x = 2.0;
+               path_.segments[0].line.p0.y = 0.0;
+               path_.segments[0].line.p1.x = -4.0;
+               path_.segments[0].line.p1.y = 0.0;
 
                path_.segments[1].type = path_.segments[1].LINE;
-               path_.segments[1].line.p0.x = -3.7087;
-               path_.segments[1].line.p0.y = -0.2661;
-               path_.segments[1].line.p1.x = -3.7731;
-               path_.segments[1].line.p1.y = -9.3514;
+               path_.segments[1].line.p0.x = -4.0;
+               path_.segments[1].line.p0.y = 0.0;
+               path_.segments[1].line.p1.x = -4.0;
+               path_.segments[1].line.p1.y = -9.5;
 
                path_.segments[2].type = path_.segments[2].LINE;
-               path_.segments[2].line.p0.x = -3.7731;
-               path_.segments[2].line.p0.y = -9.3514;
-               path_.segments[2].line.p1.x = 1.6945;
-               path_.segments[2].line.p1.y = -9.4431;
+               path_.segments[2].line.p0.x = -4.0;
+               path_.segments[2].line.p0.y = -9.5;
+               path_.segments[2].line.p1.x = 2.0;
+               path_.segments[2].line.p1.y = -9.5;
 
                path_.segments[3].type = path_.segments[3].LINE;
-               path_.segments[3].line.p0.x = 1.6945;
-               path_.segments[3].line.p0.y = -9.4431;
-               path_.segments[3].line.p1.x = 1.7701;
-               path_.segments[3].line.p1.y = -0.2498;
+               path_.segments[3].line.p0.x = 2.0;
+               path_.segments[3].line.p0.y = -9.5;
+               path_.segments[3].line.p1.x = 2.0;
+               path_.segments[3].line.p1.y = 0.0;
           }break;
           case 1: {
                // 闭环 直线+贝塞尔
                // 初始化path_
                path_.segments.resize(8);
                // 按逆时针顺序添加路径段
-               // 直线: [0.865, 4.495] -> [0.865, 6.816]
                path_.segments[0].type = path_.segments[0].LINE;
-               path_.segments[0].line.p0.x = 0.865;
-               path_.segments[0].line.p0.y = 4.495;
-               path_.segments[0].line.p1.x = 0.865;
-               path_.segments[0].line.p1.y = 6.816;
+               path_.segments[0].line.p0.x = 1.0;
+               path_.segments[0].line.p0.y = 4.0;
+               path_.segments[0].line.p1.x = 1.0;
+               path_.segments[0].line.p1.y = 7.0;
 
-               // 直线: [0.865, 6.816] -> [-3.756, 6.815]
                path_.segments[1].type = path_.segments[1].LINE;
-               path_.segments[1].line.p0.x = 0.865;
-               path_.segments[1].line.p0.y = 6.816;
-               path_.segments[1].line.p1.x = -3.756;
-               path_.segments[1].line.p1.y = 6.815;
+               path_.segments[1].line.p0.x = 1.0;
+               path_.segments[1].line.p0.y = 7.0;
+               path_.segments[1].line.p1.x = -4.0;
+               path_.segments[1].line.p1.y = 7.0;
 
-               // 直线: [-3.756, 6.815] -> [-3.756, -6.403]
                path_.segments[2].type = path_.segments[2].LINE;
-               path_.segments[2].line.p0.x = -3.756;
-               path_.segments[2].line.p0.y = 6.815;
-               path_.segments[2].line.p1.x = -3.756;
-               path_.segments[2].line.p1.y = -6.403;
+               path_.segments[2].line.p0.x = -4.0;
+               path_.segments[2].line.p0.y = 7.0;
+               path_.segments[2].line.p1.x = -4.0;
+               path_.segments[2].line.p1.y = -7.0;
 
-               // 三阶贝塞尔: [-3.756, -6.403], [-3.756, -9.403], [-3.756, -9.403], [-0.756, -9.403]
                path_.segments[3].type = path_.segments[3].BEZIER3;
-               path_.segments[3].bezier3.p0.x = -3.756;
-               path_.segments[3].bezier3.p0.y = -6.403;
-               path_.segments[3].bezier3.p1.x = -3.756;
-               path_.segments[3].bezier3.p1.y = -9.403;
-               path_.segments[3].bezier3.p2.x = -3.756;
-               path_.segments[3].bezier3.p2.y = -9.403;
-               path_.segments[3].bezier3.p3.x = -0.756;
-               path_.segments[3].bezier3.p3.y = -9.403;
+               path_.segments[3].bezier3.p0.x = -4.0;
+               path_.segments[3].bezier3.p0.y = -7.0;
+               path_.segments[3].bezier3.p1.x = -4.0;
+               path_.segments[3].bezier3.p1.y = -9.0;
+               path_.segments[3].bezier3.p2.x = -3.0;
+               path_.segments[3].bezier3.p2.y = -9.5;
+               path_.segments[3].bezier3.p3.x = -1.5;
+               path_.segments[3].bezier3.p3.y = -9.5;
 
-               // 直线: [-0.756, -9.403] -> [-1.232, -9.403]
                path_.segments[4].type = path_.segments[4].LINE;
-               path_.segments[4].line.p0.x = -0.756;
-               path_.segments[4].line.p0.y = -9.403;
-               path_.segments[4].line.p1.x = -1.232;
-               path_.segments[4].line.p1.y = -9.403;
+               path_.segments[4].line.p0.x = -1.5;
+               path_.segments[4].line.p0.y = -9.5;
+               path_.segments[4].line.p1.x = 0.0;
+               path_.segments[4].line.p1.y = -9.5;
 
-               // 三阶贝塞尔: [-1.232, -9.403], [1.768, -9.403], [1.768, -9.403], [1.768, -6.403]
                path_.segments[5].type = path_.segments[5].BEZIER3;
-               path_.segments[5].bezier3.p0.x = -1.232;
-               path_.segments[5].bezier3.p0.y = -9.403;
-               path_.segments[5].bezier3.p1.x = 1.768;
-               path_.segments[5].bezier3.p1.y = -9.403;
-               path_.segments[5].bezier3.p2.x = 1.768;
-               path_.segments[5].bezier3.p2.y = -9.403;
-               path_.segments[5].bezier3.p3.x = 1.768;
-               path_.segments[5].bezier3.p3.y = -6.403;
+               path_.segments[5].bezier3.p0.x = 0.0;
+               path_.segments[5].bezier3.p0.y = -9.5;
+               path_.segments[5].bezier3.p1.x = 1.5;
+               path_.segments[5].bezier3.p1.y = -9.5;
+               path_.segments[5].bezier3.p2.x = 2.0;
+               path_.segments[5].bezier3.p2.y = -9.0;
+               path_.segments[5].bezier3.p3.x = 2.0;
+               path_.segments[5].bezier3.p3.y = -7.5;
 
-               // 直线: [1.768, -6.403] -> [1.768, -0.455]
                path_.segments[6].type = path_.segments[6].LINE;
-               path_.segments[6].line.p0.x = 1.768;
-               path_.segments[6].line.p0.y = -6.403;
-               path_.segments[6].line.p1.x = 1.768;
-               path_.segments[6].line.p1.y = -0.455;
+               path_.segments[6].line.p0.x = 2.0;
+               path_.segments[6].line.p0.y = -7.5;
+               path_.segments[6].line.p1.x = 2.0;
+               path_.segments[6].line.p1.y = 0.0;
 
-               // 三阶贝塞尔: [1.768, -0.455], [1.768, 2.02], [0.865, 2.02], [0.865, 4.495]
                path_.segments[7].type = path_.segments[7].BEZIER3;
-               path_.segments[7].bezier3.p0.x = 1.768;
-               path_.segments[7].bezier3.p0.y = -0.455;
-               path_.segments[7].bezier3.p1.x = 1.768;
-               path_.segments[7].bezier3.p1.y = 2.02;
-               path_.segments[7].bezier3.p2.x = 0.865;
-               path_.segments[7].bezier3.p2.y = 2.02;
-               path_.segments[7].bezier3.p3.x = 0.865;
-               path_.segments[7].bezier3.p3.y = 4.495;
+               path_.segments[7].bezier3.p0.x = 2.0;
+               path_.segments[7].bezier3.p0.y = 0.0;
+               path_.segments[7].bezier3.p1.x = 2.0;
+               path_.segments[7].bezier3.p1.y = 2.0;
+               path_.segments[7].bezier3.p2.x = 1.0;
+               path_.segments[7].bezier3.p2.y = 2.0;
+               path_.segments[7].bezier3.p3.x = 1.0;
+               path_.segments[7].bezier3.p3.y = 4.0;
+          }break;
+          case 2: {
+               // 闭环 直线来回
+               path_.segments.resize(2);
+               path_.segments[0].type = path_.segments[0].LINE;
+               path_.segments[0].line.p0.x = 0.0;
+               path_.segments[0].line.p0.y = -0.25;
+               path_.segments[0].line.p1.x = -4.0;
+               path_.segments[0].line.p1.y = -0.25;
+
+               path_.segments[1].type = path_.segments[1].LINE;
+               path_.segments[1].line.p0.x = -4.0;
+               path_.segments[1].line.p0.y = -0.25;
+               path_.segments[1].line.p1.x = 0.0;
+               path_.segments[1].line.p1.y = -0.25;
           }break;
           default: {
                std::cout << "Unknown path net type" << std::endl;

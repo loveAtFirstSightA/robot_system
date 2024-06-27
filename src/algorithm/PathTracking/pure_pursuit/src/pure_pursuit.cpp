@@ -67,7 +67,7 @@ void PurePursuit::initParam()
 
 void PurePursuit::initFirstValue()
 {
-     this->v_ = 0.5f;
+     this->v_ = 0.3f;
 }
 
 double PurePursuit::normalizeAngle(double angle)
@@ -86,6 +86,7 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
 {
      if (!is_path_received_) {
           std::cout << getCurrentTime() << "path is empty, return" << std::endl;
+          sendVelocity(0.0f, 0.0f);
           return;
      }
 
@@ -114,7 +115,8 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
           if (path_number >= path_.segments.size()) {
                path_number = 0;
           }
-          std::cout << getCurrentTime() << "Tracking path number: " << path_number << std::endl;
+          std::cout << getCurrentTime() << "Tracking path number: " << path_number
+               << " type: " << path_.segments[path_number].type << std::endl;
      }
 
      // 前视距离
@@ -141,14 +143,14 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
      double ld_theta = std::atan2(ld_vy, ld_vx);
      double alpha  = ld_theta - current.yaw;
      alpha = normalizeAngle(alpha);
-     std::cout << getCurrentTime() << "alpha  = ld_theta - current.yaw " << alpha << " = " << ld_theta << " - " << current.yaw << std::endl;
+     // std::cout << getCurrentTime() << "alpha  = ld_theta - current.yaw " << alpha << " = " << ld_theta << " - " << current.yaw << std::endl;
 
      // Step 3 差速类型的模型计算旋转半径R
      double r = lookaheaddistance / (2.0f * std::sin(alpha));
     
      // Step 4 v = w * r
      w_ = v_ / r;
-     std::cout << getCurrentTime() << "r: " << r << ", w: " << w_ << std::endl;
+     // std::cout << getCurrentTime() << "r: " << r << ", w: " << w_ << std::endl;
 
      //  安全限制
      if (fabs(v_) > max_v_) {
@@ -177,6 +179,30 @@ void PurePursuit::sendVelocity(const double v, const double w)
 void PurePursuit::pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg)
 {
      path_ = *msg;
+     if (is_path_received_) {
+          return;
+     }
+     for (size_t i = 0; i < path_.segments.size(); i++) {
+          if (path_.segments[i].type == path_.segments[i].LINE) {
+               std::cout << "Path " << i << " : " 
+                    << "start[" << path_.segments[i].line.p0.x << ", " << path_.segments[i].line.p0.y << "] "
+                    << "end[" << path_.segments[i].line.p1.x << ", " << path_.segments[i].line.p1.y << "]" << std::endl;
+          } else if (path_.segments[i].type == path_.segments[i].BEZIER3) {
+               std::cout << "Path " << i << " : " 
+                    << "p0[" << path_.segments[i].bezier3.p0.x << ", " << path_.segments[i].bezier3.p0.y << "] "
+                    << "p1[" << path_.segments[i].bezier3.p1.x << ", " << path_.segments[i].bezier3.p1.y << "] "
+                    << "p2[" << path_.segments[i].bezier3.p2.x << ", " << path_.segments[i].bezier3.p2.y << "] "
+                    << "p3[" << path_.segments[i].bezier3.p3.x << ", " << path_.segments[i].bezier3.p3.y << "]" << std::endl;
+          } else if (path_.segments[i].type == path_.segments[i].BEZIER5) {
+               std::cout << "Path " << i << " : " 
+                    << "p0[" << path_.segments[i].bezier5.p0.x << ", " << path_.segments[i].bezier5.p0.y << "] "
+                    << "p1[" << path_.segments[i].bezier5.p1.x << ", " << path_.segments[i].bezier5.p1.y << "] "
+                    << "p2[" << path_.segments[i].bezier5.p2.x << ", " << path_.segments[i].bezier5.p2.y << "] "
+                    << "p3[" << path_.segments[i].bezier5.p3.x << ", " << path_.segments[i].bezier5.p3.y << "] "
+                    << "p4[" << path_.segments[i].bezier5.p4.x << ", " << path_.segments[i].bezier5.p4.y << "] "
+                    << "p5[" << path_.segments[i].bezier5.p5.x << ", " << path_.segments[i].bezier5.p5.y << "]" << std::endl;
+          }
+     }
      is_path_received_ = true;
 }
 
@@ -191,7 +217,7 @@ void PurePursuit::calculateTargetOnLine(Pose & target, const double lookahead, c
      ps_pe.vx = line.p1.x - line.p0.x;
      ps_pe.vy = line.p1.y - line.p0.y;
      double ps_pe_square_length = std::pow(ps_pe.vx, 2) + std::pow(ps_pe.vy, 2);
-     double t = ps_pc.vx * ps_pe.vx + ps_pc.vy * ps_pe.vy / ps_pe_square_length;
+     double t = (ps_pc.vx * ps_pe.vx + ps_pc.vy * ps_pe.vy) / ps_pe_square_length;
      if (t > 1.0f) {
           t = 1.0f;
      } else if (t < 0.0f) {
@@ -210,8 +236,9 @@ void PurePursuit::calculateTargetOnLine(Pose & target, const double lookahead, c
      target.x = closest.x + lookahead * unit_vector_line.vx;
      target.y = closest.y + lookahead * unit_vector_line.vy;
 
-     std::cout << getCurrentTime() << "Current: [ x" << current.x << ", y " << current.y << "]"
-          << " target: [x " << target.x << ", y" << target.y << "]" << std::endl;
+     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
+          << " target: [x " << target.x << ", y " << target.y << "]"
+          << " closest: [x " << closest.x << ", y " << closest.y << "]" << std::endl;
 }
 
 void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3) 
@@ -252,7 +279,9 @@ void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead
                closestPoint = pointOnBezier;
           }
      }
-
+     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
+          << " target: [x " << target.x << ", y " << target.y << "]"
+          << " closest: [x " << closestPoint.x << ", y " << closestPoint.y << "]" << std::endl;
      target = closestPoint;
 }
 
@@ -300,7 +329,9 @@ void PurePursuit::calculateTargetOnBezier5(Pose & target, const double lookahead
                closestPoint = pointOnBezier;
           }
      }
-
+     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
+          << " target: [x " << target.x << ", y " << target.y << "]"
+          << " closest: [x " << closestPoint.x << ", y " << closestPoint.y << "]" << std::endl;
      target = closestPoint;
 }
 
