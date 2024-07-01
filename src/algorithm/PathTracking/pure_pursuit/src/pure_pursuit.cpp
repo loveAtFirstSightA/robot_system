@@ -67,7 +67,7 @@ void PurePursuit::initParam()
 
 void PurePursuit::initFirstValue()
 {
-     this->v_ = 0.3f;
+     this->v_ = 0.6f;
 }
 
 double PurePursuit::normalizeAngle(double angle)
