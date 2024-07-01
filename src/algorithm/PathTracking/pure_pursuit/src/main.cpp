@@ -14,6 +14,8 @@
  limitations under the License.
  */
 
+// wiki: https://www.yuque.com/lafs/ugx0vi/wkfznwfmoeunp6xi
+
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
