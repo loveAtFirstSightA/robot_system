@@ -35,23 +35,23 @@ public:
 
 private:
     void timer_callback();
-    void estimate_pose_sub_callback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
+    // void estimate_pose_sub_callback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void odom_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
     void odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
-    void imu_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
-    void imu_data_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
+    // void imu_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
+    // void imu_data_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
     void vel_sub_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
     
-    rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_sub_;
-    geometry_msgs::msg::Vector3Stamped estimate_pose_;
+    // rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_sub_;
+    // geometry_msgs::msg::Vector3Stamped estimate_pose_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     nav_msgs::msg::Odometry odom_pose_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_data_sub_;
     nav_msgs::msg::Odometry odom_data_pose_;
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
-    sensor_msgs::msg::Imu imu_;
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_data_sub_;
-    sensor_msgs::msg::Imu imu_data_;
+    // rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    // sensor_msgs::msg::Imu imu_;
+    // rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_data_sub_;
+    // sensor_msgs::msg::Imu imu_data_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
     geometry_msgs::msg::Twist vel_;
 
