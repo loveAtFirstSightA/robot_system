@@ -62,12 +62,13 @@ private:
     }
     
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
+    rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
+
     double lookaheaddist_{0.0f};
     double k_{0.0f};
     double max_v_{1.0f};
     double max_w_{M_PI_2};
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
-    rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
 
     double v_;
     double w_;
