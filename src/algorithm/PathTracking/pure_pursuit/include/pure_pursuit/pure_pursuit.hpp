@@ -23,6 +23,7 @@
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 #include "pure_pursuit/logger.hpp"
+#include "pure_pursuit/common.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "algorithm_msgs/msg/path.hpp"
@@ -50,7 +51,6 @@ public:
 private:
     void initParam();
     void initFirstValue();
-    double normalizeAngle(double angle);
     void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);

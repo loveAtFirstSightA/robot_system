@@ -14,17 +14,35 @@
  limitations under the License.
  */
 
-// algorithm wiki: https://www.yuque.com/lafs/ugx0vi/ipywkhvwapde14r5
+#ifndef PURE_PURSUIT__COMMON_HPP_
+#define PURE_PURSUIT__COMMON_HPP_
 
-#include <memory>
+#include <cmath>
 
-#include "rclcpp/rclcpp.hpp"
-#include "stanley_controller/stanley_controller.hpp"
+struct Vector {
+    double vx;
+    double vy;
+};
 
-int main(int argc, char * argv[])
+struct Pose {
+    double x;
+    double y;
+    double yaw;
+};
+
+const double PI = 3.14159265358979323846;
+
+// inline https://www.yuque.com/lafs/zlpgyp/tukmi0e5yu78tv47
+// 将角度限制在 -𝜋 和 𝜋 之间
+inline double normalizeAngle(double angle)
 {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<stanley_controller::StanleyController>());
-    rclcpp::shutdown();
-    return 0;
+    while (angle > PI) {
+        angle -= 2.0 * PI;
+    }
+    while (angle < -PI) {
+        angle += 2.0 * PI;
+    }
+    return angle;
 }
+
+#endif  // PURE_PURSUIT__COMMON_HPP_

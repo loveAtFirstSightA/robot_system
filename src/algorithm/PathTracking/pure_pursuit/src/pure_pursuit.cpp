@@ -70,17 +70,6 @@ void PurePursuit::initFirstValue()
      this->v_ = 0.6f;
 }
 
-double PurePursuit::normalizeAngle(double angle)
-{
-     while (angle > M_PI) {
-          angle -= 2.0f * M_PI;
-     }
-     while (angle < -M_PI) {
-          angle += 2.0f * M_PI;
-     }
-     return angle; 
-}
-
 // main function of purepursuit algorithm 
 void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
 {
@@ -166,6 +155,7 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
           v_ = 0.0f;
      }
      sendVelocity(v_, w_);
+     std::cout << getCurrentTime() << "v: " << v_ << ", w: " << w_ << std::endl;
 }
 
 void PurePursuit::sendVelocity(const double v, const double w)

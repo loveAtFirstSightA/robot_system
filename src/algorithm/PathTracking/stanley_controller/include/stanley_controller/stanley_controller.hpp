@@ -17,10 +17,12 @@
 #ifndef STANLEY_CONTROLLER__STANLEY_CONTROLLER_HPP_
 #define STANLEY_CONTROLLER__STANLEY_CONTROLLER_HPP_
 
+#include "stanley_controller/common.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "algorithm_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+
 
 namespace stanley_controller
 {
@@ -31,15 +33,33 @@ public:
     ~StanleyController();
 
 private:
+    void updateParameters();
+    void initFirstValue();
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
     void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
+    // 计算路径切线的航向角度
+    void calculatePathHeadingOnLine(double & heading, /*const Pose & current,*/ const algorithm_msgs::msg::Line & line);
+    void calculatePathHeadingOnBezier3(double & heading, const Pose & current, const algorithm_msgs::msg::Bezier3 & bezier3);
+    void calculatePathHeadingOnBezier5(double & heading, const Pose & current, const algorithm_msgs::msg::Bezier5 & bezier5);
+    // 计算距离当前点最近的点
+    void calculateClosestPointOnLine(Pose & closest, const Pose & current, const algorithm_msgs::msg::Line & line);
+    void calculateClosestPointOnBezier3(Pose & closest, const Pose & current, const algorithm_msgs::msg::Bezier3 & bezier3);
+    void calculateClosestPointOnBezier5(Pose & closest, const Pose & current, const algorithm_msgs::msg::Bezier5 & bezier5);
 
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
     rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
     bool is_path_received_{false};
     algorithm_msgs::msg::Path path_;
+
+    double v_;
+    double w_;
+
+    // algorithm parameters
+    double ld_;
+    double k_;
+
 
 
 };

@@ -71,6 +71,14 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_libraries(${library_name})
 ament_export_dependencies(${dependencies})
 ament_export_include_directories(include)

@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-// wiki: https://www.yuque.com/lafs/ugx0vi/wkfznwfmoeunp6xi
+// algorithm wiki: https://www.yuque.com/lafs/ugx0vi/wkfznwfmoeunp6xi
 
 #include <memory>
 

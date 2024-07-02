@@ -1,0 +1,4 @@
+stanley_controller:
+  ros__parameters:
+    ld: 1.5
+    k: 0.001
