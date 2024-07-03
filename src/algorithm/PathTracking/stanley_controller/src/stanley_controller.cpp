@@ -46,19 +46,16 @@ StanleyController::~StanleyController() {}
 
 void StanleyController::updateParameters()
 {
-     this->declare_parameter<double>("ld", 0.3f);
      this->declare_parameter<double>("k", 0.4f);
 
-     ld_ = this->get_parameter("ld").get_value<double>();
      k_ = this->get_parameter("k").get_value<double>();
      std::cout << getCurrentTime() << "Parameters: " << std::endl;
-     std::cout << getCurrentTime() << "  ld: " << ld_ << std::endl;
      std::cout << getCurrentTime() << "  k: " << k_ << std::endl;
 }
 
 void StanleyController::initFirstValue()
 {
-     this->v_ = 0.6f;
+     this->v_ = 0.3f;
 }
 
 void StanleyController::sendVelocity(const double v, const double w)
@@ -103,7 +100,7 @@ void StanleyController::pathSubCallback(const algorithm_msgs::msg::Path::SharedP
 void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
 {
      if (!is_path_received_) {
-          std::cout << getCurrentTime() << "path is empty, return" << std::endl;
+          std::cout << getCurrentTime() << "Path is empty, return" << std::endl;
           sendVelocity(0.0f, 0.0f);
           return;
      }
@@ -128,7 +125,7 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
      double error_y = std::pow(path_end.y - current.y, 2);
      double error_dist = std::sqrt(error_x + error_y);
      
-     const double change_path_threshold = 0.2f;
+     const double change_path_threshold = 0.25f;
      if (error_dist < change_path_threshold) {
           path_number ++;
           if (path_number >= path_.segments.size()) {
@@ -147,12 +144,14 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
      } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
           calculatePathHeadingOnBezier5(path_heading, current, path_.segments[path_number].bezier5);
      }
-     std::cout << getCurrentTime() << "path num: " << path_number << ", path_heading: " << path_heading << ", current yaw: " << current.yaw << std::endl;
+     std::cout << getCurrentTime() << "Path: " << path_number << ", path_heading: " << path_heading << ", current yaw: " << current.yaw << std::endl;
      // Step 1.2 计算航向偏差
      double theta_varphi = path_heading - current.yaw;
-     std::cout << getCurrentTime() << "path num: " << path_number << ", theta_varphi: " << theta_varphi << std::endl;
-     // Step 2 假设航向偏差为零， 计算矫正交叉航迹航迹偏差的航向偏差角度
+     // 角度标准化
+     theta_varphi = normalizeAngle(theta_varphi);
+     std::cout << getCurrentTime() << "Path: " << path_number << ", theta_varphi: " << theta_varphi << std::endl;
 
+     // Step 2 假设航向偏差为零， 计算矫正交叉航迹航迹偏差的航向偏差角度
      // Step 2.1 计算横向偏差
      // Step 2.1.1 寻找距离路径最近的点
      Pose closest;
@@ -163,30 +162,22 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
      } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
           calculateClosestPointOnBezier5(closest, current, path_.segments[path_number].bezier5);
      }
-     std::cout << getCurrentTime() << "path num: " << path_number << ", closest: [" << closest.x << ", " << closest.y << "]" << std::endl;
+     std::cout << getCurrentTime() << "Path: " << path_number << ", closest: [" << closest.x << ", " << closest.y << "]" << std::endl;
      // 计算路径最近点与当前点的欧氏距离
      double shortest_distance = std::sqrt(std::pow((closest.x - current.x), 2) + std::pow((closest.y - current.y), 2));
-
-     // 使用叉积计算当前点与路径之间的相对位置：
-     // 如果 cross_product 为正，说明当前点在路径右侧，横向偏差为正。
-     // 如果 cross_product 为负，说明当前点在路径左侧，横向偏差为负。
-     // 确定横向偏差的符号
-     double cross_product = (closest.x - current.x) * std::sin(current.yaw) - (closest.y - current.y) * std::cos(current.yaw);
-     if (cross_product < 0) {
-          shortest_distance = -shortest_distance;  // 如果在路径左侧，横向偏差为负
-     }
-     // 输出横向偏差
-     std::cout << getCurrentTime() << "path num: " << path_number << ", shortest_distance: " << shortest_distance << std::endl;
-
+     // 确定横向偏差是在路劲的左侧还是右侧 右手坐标系 偏差在路径左侧为正 偏差在路径右侧为负
+     double lateral_error_sign = calculateLateralErrorSign(current, closest, path_heading);
+     double signed_shortest_distance = shortest_distance * lateral_error_sign;
      // Step 2.2 根据速度v和参数k确定d_t
-     double theta_y = std::atan2(k_ * shortest_distance, v_);
-     std::cout << getCurrentTime() << "path num: " << path_number << ", shortest_distance: " << shortest_distance << ", theta_y: " << theta_y << std::endl;
+     double theta_y = std::atan2(signed_shortest_distance, v_ / k_);
+     std::cout << getCurrentTime() << "Path: " << path_number << ", shortest_distance: " << shortest_distance << ", theta_y: " << theta_y << std::endl;
      // Step 2.3 计算转角 theta
      double theta = theta_varphi + theta_y;
      theta = normalizeAngle(theta);
-     std::cout << getCurrentTime() << "path num: " << path_number << ", theta: " << theta << std::endl;
-     w_ = theta / 0.05f;
-     std::cout << getCurrentTime() << "path num: " << path_number << ", w_: " << w_ << std::endl;
+     std::cout << getCurrentTime() << "Path: " << path_number << ", theta: " << theta << std::endl;
+     w_ = theta / 0.25f;
+     std::cout << getCurrentTime() << "Path: " << path_number << ", w_: " << w_ << std::endl;
+     std::cout << std::endl;
      // send velocity
      sendVelocity(v_, w_);
 }
@@ -353,8 +344,22 @@ void StanleyController::calculateClosestPointOnBezier5(Pose & closest, const Pos
      }
 }
 
-
-
+double StanleyController::calculateLateralErrorSign(const Pose& current, const Pose& closest, double path_heading)
+{
+    // 计算路径的法线向量
+    double normal_x = -std::sin(path_heading);
+    double normal_y = std::cos(path_heading);
+    
+    // 计算当前点到路径最近点的向量
+    double vec_x = current.x - closest.x;
+    double vec_y = current.y - closest.y;
+    
+    // 计算路径法线向量和当前点到路径最近点向量的点积
+    double dot_product = normal_x * vec_x + normal_y * vec_y;
+    
+    // 如果点积为负，则当前点在路径右侧；为正，则在左侧
+    return (dot_product < 0) ? 1.0 : -1.0;
+}
 
 
 }  // namespace stanley_controller

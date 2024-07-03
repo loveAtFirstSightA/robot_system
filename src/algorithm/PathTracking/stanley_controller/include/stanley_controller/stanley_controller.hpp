@@ -46,6 +46,7 @@ private:
     void calculateClosestPointOnLine(Pose & closest, const Pose & current, const algorithm_msgs::msg::Line & line);
     void calculateClosestPointOnBezier3(Pose & closest, const Pose & current, const algorithm_msgs::msg::Bezier3 & bezier3);
     void calculateClosestPointOnBezier5(Pose & closest, const Pose & current, const algorithm_msgs::msg::Bezier5 & bezier5);
+    double calculateLateralErrorSign(const Pose& current, const Pose& closest, double path_heading);
 
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
@@ -57,7 +58,6 @@ private:
     double w_;
 
     // algorithm parameters
-    double ld_;
     double k_;
 
 
