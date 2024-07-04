@@ -175,6 +175,8 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
      double theta = theta_varphi + theta_y;
      theta = normalizeAngle(theta);
      std::cout << getCurrentTime() << "Path: " << path_number << ", theta: " << theta << std::endl;
+     // 角度偏差转换成角速度目标值
+     // w_ = v_ * std::tan(theta) / 0.5f;
      w_ = theta / 0.25f;
      std::cout << getCurrentTime() << "Path: " << path_number << ", w_: " << w_ << std::endl;
      std::cout << std::endl;
