@@ -179,9 +179,10 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
      // w_ = v_ * std::tan(theta) / 0.5f;
      w_ = theta / 0.25f;
      std::cout << getCurrentTime() << "Path: " << path_number << ", w_: " << w_ << std::endl;
-     std::cout << std::endl;
      // send velocity
      sendVelocity(v_, w_);
+
+     std::cout << std::endl;
 }
 
 void StanleyController::calculatePathHeadingOnLine(double & heading, /*const Pose & current,*/ const algorithm_msgs::msg::Line & line)

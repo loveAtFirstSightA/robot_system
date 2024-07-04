@@ -132,30 +132,31 @@ void PurePursuit::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::
      double ld_theta = std::atan2(ld_vy, ld_vx);
      double alpha  = ld_theta - current.yaw;
      alpha = normalizeAngle(alpha);
-     // std::cout << getCurrentTime() << "alpha  = ld_theta - current.yaw " << alpha << " = " << ld_theta << " - " << current.yaw << std::endl;
+     std::cout << getCurrentTime() << "alpha  = ld_theta - current.yaw " << alpha << " = " << ld_theta << " - " << current.yaw << std::endl;
 
      // Step 3 差速类型的模型计算旋转半径R
      double r = lookaheaddistance / (2.0f * std::sin(alpha));
     
      // Step 4 v = w * r
      w_ = v_ / r;
-     // std::cout << getCurrentTime() << "r: " << r << ", w: " << w_ << std::endl;
 
-     //  安全限制
-     if (fabs(v_) > max_v_) {
-          v_ = 0.0f;
-          std::cout << getCurrentTime() << "Anomaly detected: v_" << std::endl;
-     }
-     if (fabs(w_) > max_w_) {
-          w_ = 0.0f;
-          std::cout << getCurrentTime() << "Anomaly detected: w_" << std::endl;
-     }
-     if (std::isinf(r) || std::isnan(r)) {
-          w_ = 0.0f;
-          v_ = 0.0f;
-     }
+     // //  安全限制
+     // if (fabs(v_) > max_v_) {
+     //      v_ = 0.0f;
+     //      std::cout << getCurrentTime() << "Anomaly detected: v_" << std::endl;
+     // }
+     // if (fabs(w_) > max_w_) {
+     //      w_ = 0.0f;
+     //      std::cout << getCurrentTime() << "Anomaly detected: w_" << std::endl;
+     // }
+     // if (std::isinf(r) || std::isnan(r)) {
+     //      w_ = 0.0f;
+     //      v_ = 0.0f;
+     // }
+     std::cout << getCurrentTime() << "v: " << v_ << ", w: " << w_ << ", r: " << r << std::endl;
      sendVelocity(v_, w_);
-     std::cout << getCurrentTime() << "v: " << v_ << ", w: " << w_ << std::endl;
+
+     std::cout << std::endl;
 }
 
 void PurePursuit::sendVelocity(const double v, const double w)
