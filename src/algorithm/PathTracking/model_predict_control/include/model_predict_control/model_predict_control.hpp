@@ -18,6 +18,11 @@
 #define MODEL_PREDICT_CONTROL__MODEL_PREDICT_CONTROL_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/vector3_stamped.hpp"
+#include "algorithm_msgs/msg/path.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "model_predict_control/logger.hpp"
+#include "model_predict_control/common.hpp"
 
 namespace model_predict_control
 {
@@ -28,8 +33,18 @@ public:
     ~ModelPredictControl();
 
 private:
-
-
+    void initFirstValue();
+    void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
+    void sendVelocity(const double v, const double w);
+    void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
+    
+    rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr current_pose_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr vel_;
+    rclcpp::Subscription<algorithm_msgs::msg::Path>::SharedPtr path_sub_;
+    double v_;
+    double w_;
+    bool is_path_received_{false};
+    algorithm_msgs::msg::Path path_;
 
 
 };
