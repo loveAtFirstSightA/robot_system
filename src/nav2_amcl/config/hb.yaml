@@ -21,7 +21,6 @@ amcl:
     max_particles: 2000
     min_particles: 1000
     odom_frame_id: "odom"
-    # odom_frame_id: "odom_data"
     pf_err: 0.05
     pf_z: 0.99
     recovery_alpha_fast: 0.0

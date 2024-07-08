@@ -464,6 +464,9 @@ private:
   geometry_msgs::msg::Vector3 last_pos_;
   geometry_msgs::msg::Vector3 current_pos_;
 
+private:
+  bool getOdomPoseFromTopic(double & x, double & y, double & yaw);
+
 };
 
 }  // namespace nav2_amcl

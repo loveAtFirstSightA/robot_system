@@ -732,6 +732,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
   if (!getOdomPose(
       latest_odom_pose_, pose.v[0], pose.v[1], pose.v[2],
       laser_scan->header.stamp, base_frame_id_))
+  // if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) 
   {
     RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
     return;
@@ -1921,6 +1922,15 @@ AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf)
     std::cerr << "Could not get transform from " << source_link << " to " << target_link << ": " << ex.what() << '\n';
     return false;
   }
+}
+
+bool AmclNode::getOdomPoseFromTopic(double & x, double & y, double & yaw)
+{
+  x = current_odom_.pose.pose.position.x;
+  y = current_odom_.pose.pose.position.y;
+  yaw = tf2::getYaw(current_odom_.pose.pose.orientation);
+  
+  return true;
 }
 
 
