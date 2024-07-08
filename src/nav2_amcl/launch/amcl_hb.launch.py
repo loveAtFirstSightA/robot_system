@@ -37,7 +37,7 @@ def generate_launch_description():
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
         name='lifecycle_manager_amcl',
-        parameters=[{'use_sim_time': True},
+        parameters=[{'use_sim_time': False},
                     {'autostart': True},
                     {'node_names': ['amcl', 'map_server']}],
         output='screen')
