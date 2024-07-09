@@ -67,7 +67,7 @@ void PurePursuit::initParam()
 
 void PurePursuit::initFirstValue()
 {
-     this->v_ = 0.6f;
+     this->v_ = 0.5f;
 }
 
 // main function of purepursuit algorithm 
