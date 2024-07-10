@@ -20,13 +20,60 @@ namespace particle_filter
 {
 ParticleFilter::ParticleFilter() : Node("particle_filter")
 {
-
+     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+     map_sub_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
+          "/map",
+          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
+          std::bind(&ParticleFilter::mapSubCallback, this, std::placeholders::_1));
+     scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+          "/scan",
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data)),
+          std::bind(&ParticleFilter::scanSubCallback, this, std::placeholders::_1));
 }
 
 ParticleFilter::~ParticleFilter() {}
 
+void ParticleFilter::mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+{
+     map_ = *msg;
+     map_received_ = true;
+}
 
+void ParticleFilter::scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
+{
+     if (!map_received_) {
+          std::cout << getCurrentTime() << "No map reveiced" << std::endl;
+          return;
+     }
+     
+     // 雷达数据预处理 排除无效的雷达数据
+     double x, y, yaw;
+     // 获取里程计信息
+     if (!getOdom(x, y, yaw)) {
+          std::cout << getCurrentTime() << "No odometry reveiced" << std::endl;
+          return;
+     }
 
+}
+
+bool ParticleFilter::getOdom(double & x, double & y, double & yaw)
+{
+     geometry_msgs::msg::TransformStamped tf_pose;
+     try {
+          tf_pose = tf_buffer_->lookupTransform("base_footprint", "odom", tf2::TimePointZero);
+     } catch(const std::exception& e) {
+          std::cerr << getCurrentTime() << e.what() << '\n';
+
+          return false;
+     }
+     x = tf_pose.transform.translation.x;
+     y = tf_pose.transform.translation.y;
+     yaw = tf2::getYaw(tf_pose.transform.rotation);
+
+     return true;
+}
 
 
 }  // namespace particle_filter

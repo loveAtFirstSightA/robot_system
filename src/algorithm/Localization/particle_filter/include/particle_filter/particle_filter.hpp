@@ -18,6 +18,16 @@
 #define PARTICLE_FILTER__PARTICLE_FILTER_HPP_
 
 #include "rclcpp/rclcpp.hpp"
+#include "particle_filter/logger.hpp"
+// #include "geometry_msgs/msg/transform_stamped.hpp"
+#include "nav_msgs/msg/occupancy_grid.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "tf2/utils.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/transform_broadcaster.h"
 
 namespace particle_filter
 {
@@ -28,6 +38,22 @@ public:
     ~ParticleFilter();
 
 private:
+    // 读取激光雷达数据 里程计数据 地图数据
+    void mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
+    void scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+
+    bool getOdom(double & x, double & y, double & yaw);
+
+    rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+    bool map_received_{false};
+    nav_msgs::msg::OccupancyGrid map_;
+
+
 
 };
 }  // namespace particle_filter
