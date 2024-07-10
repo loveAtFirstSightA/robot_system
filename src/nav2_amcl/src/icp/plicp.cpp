@@ -34,8 +34,7 @@ PLICP::~PLICP()
     ld_free(last_scan_ldp_);
 }
 
-void
-PLICP::initParams()
+void PLICP::initParams()
 {
     std::cout << getCurrentTime() << "Initialization plicp parameters" << std::endl;
     input_.max_angular_correction_deg = 45.0f;
@@ -66,8 +65,7 @@ PLICP::initParams()
     input_.use_sigma_weights = 0;
 }
 
-void
-PLICP::createCache(const sensor_msgs::msg::LaserScan::SharedPtr & scan_msg)
+void PLICP::createCache(const sensor_msgs::msg::LaserScan::SharedPtr & scan_msg)
 {
     // 雷达数据间的角度是固定的，因此可以将对应角度的cos与sin值缓存下来，不用每次都计算
     a_cos_.clear();
@@ -140,8 +138,7 @@ PLICP::convertMapToLDP(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
 }
 #endif 
 
-void
-PLICP::convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan)
+void PLICP::convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan)
 {
     unsigned int n = scan->ranges.size();
     scan_ldp_ = ld_alloc_new(n);
@@ -181,8 +178,7 @@ PLICP::convertScanToLDP(const sensor_msgs::msg::LaserScan::SharedPtr scan)
     processPLICP();
 }
 
-void
-PLICP::processPLICP()
+void PLICP::processPLICP()
 {
     input_.laser_ref = last_scan_ldp_;
     input_.laser_sens = scan_ldp_;
@@ -201,8 +197,7 @@ PLICP::processPLICP()
     last_scan_ldp_ = scan_ldp_;
 }
 
-void
-PLICP::getTransform(double & x, double & y)
+void PLICP::getTransform(double & x, double & y)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     x = this->x_;

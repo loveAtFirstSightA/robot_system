@@ -388,7 +388,4 @@ void ModelPredictControl::pathSubCallback(const algorithm_msgs::msg::Path::Share
 }
 
 
-
-
-
 }  // namespace model_predict_control

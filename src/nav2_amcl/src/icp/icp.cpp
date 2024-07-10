@@ -19,18 +19,11 @@
 
 namespace nav2_amcl
 {
-ICP::ICP()
-{
-    // 
-}
+ICP::ICP() {}
 
-ICP::~ICP()
-{
-    // 
-}
+ICP::~ICP() {}
 
-void
-ICP::converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
+void ICP::converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
 {
     std::cout << getCurrentTime() << "Start converting map data" << std::endl;
     unsigned int width = static_cast<unsigned int>(map->info.width);
@@ -89,8 +82,7 @@ ICP::converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
     target_pointcloud_ = point_tmp;
 }
 
-void
-ICP::converScanToPcl(const sensor_msgs::msg::LaserScan::SharedPtr scan, double x, double y, double yaw)
+void ICP::converScanToPcl(const sensor_msgs::msg::LaserScan::SharedPtr scan, double x, double y, double yaw)
 {
     // Create a point cloud pointer in PCL format
     pcl::PointCloud<pcl::PointXYZ>::Ptr point_tmp = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -139,8 +131,7 @@ ICP::converScanToPcl(const sensor_msgs::msg::LaserScan::SharedPtr scan, double x
     source_pointcloud_ = point_tmp;
 }
 
-bool
-ICP::processICPScanWithMap(int times, float & x, float & y, float & yaw)
+bool ICP::processICPScanWithMap(int times, float & x, float & y, float & yaw)
 {
     icp_.setInputSource(source_pointcloud_);
     icp_.setInputTarget(target_pointcloud_);
