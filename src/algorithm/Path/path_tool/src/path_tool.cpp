@@ -53,6 +53,7 @@ void PathTool::initPath()
      // unsigned int path_nte_type = 0;
      unsigned int path_nte_type = 1;
      // unsigned int path_nte_type = 2;
+     // unsigned int path_nte_type = 3;    // 21 floor map
      switch (path_nte_type) {
           case 0: {
                // 闭环 直线
@@ -83,7 +84,6 @@ void PathTool::initPath()
           }break;
           case 1: {
                // 闭环 直线+贝塞尔
-               // 初始化path_
                path_.segments.resize(10);
                // 按逆时针顺序添加路径段
                path_.segments[0].type = path_.segments[0].LINE;
@@ -180,6 +180,73 @@ void PathTool::initPath()
                path_.segments[1].line.p0.y = -0.25;
                path_.segments[1].line.p1.x = 0.0;
                path_.segments[1].line.p1.y = -0.25;
+          }break;
+          case 3: {
+               // 闭环 直线 + bezier
+               path_.segments.resize(8);
+               path_.segments[0].type = path_.segments[0].LINE;
+               path_.segments[0].line.p0.x = -3.0;
+               path_.segments[0].line.p0.y = -7.0;
+               path_.segments[0].line.p1.x = -6.0;
+               path_.segments[0].line.p1.y = -7.0;
+
+               path_.segments[1].type = path_.segments[1].BEZIER3;
+               path_.segments[1].bezier3.p0.x = -6.0;
+               path_.segments[1].bezier3.p0.y = -7.0;
+               path_.segments[1].bezier3.p1.x = -6.5;
+               path_.segments[1].bezier3.p1.y = -7.0;
+               path_.segments[1].bezier3.p2.x = -7.0;
+               path_.segments[1].bezier3.p2.y = -7.5;
+               path_.segments[1].bezier3.p3.x = -7.0;
+               path_.segments[1].bezier3.p3.y = -8.0;
+
+               path_.segments[2].type = path_.segments[2].LINE;
+               path_.segments[2].line.p0.x = -7.0;
+               path_.segments[2].line.p0.y = -8.0;
+               path_.segments[2].line.p1.x = -7.0;
+               path_.segments[2].line.p1.y = -10.0;
+
+               path_.segments[3].type = path_.segments[3].BEZIER3;
+               path_.segments[3].bezier3.p0.x = -7.0;
+               path_.segments[3].bezier3.p0.y = -10.0;
+               path_.segments[3].bezier3.p1.x = -7.0;
+               path_.segments[3].bezier3.p1.y = -10.5;
+               path_.segments[3].bezier3.p2.x = -6.5;
+               path_.segments[3].bezier3.p2.y = -11.0;
+               path_.segments[3].bezier3.p3.x = -6.0;
+               path_.segments[3].bezier3.p3.y = -11.0;
+
+               path_.segments[4].type = path_.segments[4].LINE;
+               path_.segments[4].line.p0.x = -6.0;
+               path_.segments[4].line.p0.y = -11.0;
+               path_.segments[4].line.p1.x = -3.0;
+               path_.segments[4].line.p1.y = -11.0;
+
+               path_.segments[5].type = path_.segments[5].BEZIER3;
+               path_.segments[5].bezier3.p0.x = -3.0;
+               path_.segments[5].bezier3.p0.y = -11.0;
+               path_.segments[5].bezier3.p1.x = -2.5;
+               path_.segments[5].bezier3.p1.y = -11.0;
+               path_.segments[5].bezier3.p2.x = -2.0;
+               path_.segments[5].bezier3.p2.y = -10.5;
+               path_.segments[5].bezier3.p3.x = -2.0;
+               path_.segments[5].bezier3.p3.y = -10.0;
+
+               path_.segments[6].type = path_.segments[6].LINE;
+               path_.segments[6].line.p0.x = -2.0;
+               path_.segments[6].line.p0.y = -10.0;
+               path_.segments[6].line.p1.x = -2.0;
+               path_.segments[6].line.p1.y = -8.0;
+
+               path_.segments[7].type = path_.segments[7].BEZIER3;
+               path_.segments[7].bezier3.p0.x = -2.0;
+               path_.segments[7].bezier3.p0.y = -8.0;
+               path_.segments[7].bezier3.p1.x = -2.0;
+               path_.segments[7].bezier3.p1.y = -7.5;
+               path_.segments[7].bezier3.p2.x = -2.5;
+               path_.segments[7].bezier3.p2.y = -7.0;
+               path_.segments[7].bezier3.p3.x = -3.0;
+               path_.segments[7].bezier3.p3.y = -7.0;
           }break;
           default: {
                std::cout << "Unknown path net type" << std::endl;
