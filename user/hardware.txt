@@ -1,6 +1,0 @@
-里程计
-    odometry
-激光雷达
-    lidar
-IMU
-    imu
