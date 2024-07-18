@@ -261,7 +261,6 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
   particle_cloud_pub_->on_activate();
-  estimate_pose_pub_->on_activate();
   estimate_pose_status_pub_->on_activate();
 
   first_pose_sent_ = false;
@@ -308,7 +307,6 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   // Lifecycle publishers must be explicitly deactivated
   pose_pub_->on_deactivate();
   particle_cloud_pub_->on_deactivate();
-  estimate_pose_pub_->on_deactivate();
   estimate_pose_status_pub_->on_deactivate();
 
   // reset dynamic parameter handler
@@ -357,7 +355,6 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   // PubSub
   pose_pub_.reset();
   particle_cloud_pub_.reset();
-  estimate_pose_pub_.reset();
   estimate_pose_status_pub_.reset();
 
   // Odometry
@@ -704,14 +701,8 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     }
     return;
   }
-  std::chrono::steady_clock::time_point start_time_ = std::chrono::steady_clock::now();
   scan_ = std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan);
   plicp_.convertScanToLDP(scan_);
-  std::chrono::steady_clock::time_point end_time_ = std::chrono::steady_clock::now();
-  std::chrono::duration<double> used_time_ = std::chrono::duration_cast<std::chrono::duration<double>>(end_time_ - start_time_);
-  if (used_time_.count() > 0.1f) {
-    RCLCPP_INFO(this->get_logger(), "Scan Match cost time: %lf s", used_time_.count());
-  }
   std::string laser_scan_frame_id = nav2_util::strip_leading_slash(laser_scan->header.frame_id);
   last_laser_received_ts_ = now();
   int laser_index = -1;
@@ -729,11 +720,14 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
 
   // Where was the robot when this scan was taken?
   pf_vector_t pose;
-  if (!getOdomPose(
-      latest_odom_pose_, pose.v[0], pose.v[1], pose.v[2],
-      laser_scan->header.stamp, base_frame_id_))
-  // if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) 
-  {
+  // if (!getOdomPose(
+  //     latest_odom_pose_, pose.v[0], pose.v[1], pose.v[2],
+  //     laser_scan->header.stamp, base_frame_id_)) 
+  // {
+  //   RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
+  //   return;
+  // }
+  if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) {
     RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
     return;
   }
@@ -804,10 +798,13 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     }
   } else if (latest_tf_valid_) {
     if (tf_broadcast_ == true) {
-      // Nothing changed, so we'll just republish the last transform, to keep
-      // everybody happy.
-      tf2::TimePoint transform_expiration = tf2_ros::fromMsg(laser_scan->header.stamp) +
-        transform_tolerance_;
+      auto current_time = rclcpp::Clock().now();
+      auto time_since_last_movement = current_time - last_movement_time_;
+      if (time_since_last_movement.seconds() >= 300.0) {
+        // IMU has temperature drift phenomenon
+        calculateMaptoOdomTransformWithImu(laser_scan);
+      }
+      tf2::TimePoint transform_expiration = tf2_ros::fromMsg(laser_scan->header.stamp) + transform_tolerance_;
       sendMapToOdomTransform(transform_expiration);
     }
   }
@@ -1061,8 +1058,11 @@ AmclNode::publishAmclPose(
   estimate_pose_.vector.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
   estimate_pose_.vector.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
   estimate_pose_.vector.z = hyps[max_weight_hyp].pf_pose_mean.v[2];
-  RCLCPP_INFO(this->get_logger(), "\x1b[32mAmcl estimate pose: [x %.4lf, y %.4lf, yaw %.4lf]\x1b[0m", 
-    hyps[max_weight_hyp].pf_pose_mean.v[0], hyps[max_weight_hyp].pf_pose_mean.v[1], hyps[max_weight_hyp].pf_pose_mean.v[2]);
+  std::cout << getCurrentTime() << "Amcl estimate pose: "
+    << "[x " << hyps[max_weight_hyp].pf_pose_mean.v[0]
+    << ", y " << hyps[max_weight_hyp].pf_pose_mean.v[1]
+    << ", yaw " << hyps[max_weight_hyp].pf_pose_mean.v[2]
+    << "]" << std::endl;
 }
 
 void
@@ -1476,7 +1476,7 @@ AmclNode::mapReceived(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   }
   handleMapMessage(*msg);
   first_map_received_ = true;
-  icp_.converMapToPcl(msg);
+  // icp_.converMapToPcl(msg);
 }
 
 void
@@ -1625,19 +1625,14 @@ AmclNode::initPubSub()
   map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
     map_topic_, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
     std::bind(&AmclNode::mapReceived, this, std::placeholders::_1));
-  
-  estimate_pose_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(
-    "estimate_pose",
-    rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
-  
+
   estimate_pose_status_pub_ = this->create_publisher<std_msgs::msg::Bool>(
     "amcl_localization_accuracy",
     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
   
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    // "odom",
-    "odom_data",
-    1,
+    "/odom_data",
+    10,
     std::bind(&AmclNode::odomSubCallback, this, std::placeholders::_1));
 
   vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -1723,21 +1718,14 @@ AmclNode::initParticleFilter()
   memset(&pf_odom_pose_, 0, sizeof(pf_odom_pose_));
 }
 
-void
-AmclNode::initLaserScan()
+void AmclNode::initLaserScan()
 {
   scan_error_count_ = 0;
   last_laser_received_ts_ = rclcpp::Time(0);
 }
 
-// 
-void
-AmclNode::initTimer()
+void AmclNode::initTimer()
 {
-  timer50ms_ = this->create_wall_timer(
-    std::chrono::milliseconds(50),
-    std::bind(&AmclNode::timer50msCallback, this));
-  
   timer1s_ = this->create_wall_timer(
     std::chrono::seconds(1),
     std::bind(&AmclNode::timer1sCallback, this));
@@ -1751,20 +1739,7 @@ AmclNode::initTimer()
   timer1s_first_executed_ = true;
 }
 
-void
-AmclNode::timer50msCallback()
-{
-  auto msg = geometry_msgs::msg::Vector3Stamped();
-  msg = estimate_pose_;
-  msg.header.frame_id = "estimate_pose_";
-  msg.header.stamp = rclcpp::Clock().now();
-  estimate_pose_pub_->publish(msg);
-  RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [x %lf, y %lf, yaw %lf]", 
-    estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
-}
-
-void
-AmclNode::timer1sCallback()
+void AmclNode::timer1sCallback()
 {
   if (!initial_pose_is_known_) {
     return;
@@ -1772,26 +1747,21 @@ AmclNode::timer1sCallback()
   if (timer1s_first_executed_) {
     last_odom_ = current_odom_;
     last_estimate_pose_ = estimate_pose_;
-    RCLCPP_INFO(this->get_logger(), "\x1b[32mlast_odom_: [x %.4lf, y %.4lf, theta %.4lf], last_estimate_pose_:[x %.4lf, y %.4lf, theta %.4lf]\x1b[0m",
+    RCLCPP_INFO(this->get_logger(), "last_odom_: [x %.4lf, y %.4lf, theta %.4lf], last_estimate_pose_:[x %.4lf, y %.4lf, theta %.4lf]",
       last_odom_.pose.pose.position.x, last_odom_.pose.pose.position.y, tf2::getYaw(last_odom_.pose.pose.orientation),
       last_estimate_pose_.vector.x, last_estimate_pose_.vector.y, last_estimate_pose_.vector.z);
     plicp_.getTransform(last_pos_.x, last_pos_.y);
     timer1s_first_executed_ = false;
     return;
   }
-  // RCLCPP_DEBUG(this->get_logger(), "estimate_pose_: [%.4lf, %.4lf, %.4lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
   if (!robot_moved_) {
-    // auto msg = std_msgs::msg::Bool();
-    // msg.data = true;
-    // estimate_pose_status_pub_->publish(msg);
     return;
   }
-  std::chrono::steady_clock::time_point start_time_ = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
   plicp_.getTransform(current_pos_.x, current_pos_.y);
   double delta_pos_x = std::fabs(current_pos_.x - last_pos_.x);
   double delta_pos_y = std::fabs(current_pos_.y - last_pos_.y);
   double delta = std::sqrt(std::pow(delta_pos_x, 2) + std::pow(delta_pos_y, 2));
-
   bool accuracy_status;
   // monitor main function
   estimete_pose_monitor(accuracy_status, last_odom_, current_odom_, last_estimate_pose_, estimate_pose_, delta);
@@ -1803,19 +1773,17 @@ AmclNode::timer1sCallback()
       estimate_pose_status_.data ? "True" : "false");
   }
   estimate_pose_status_pub_->publish(msg);
-  std::chrono::steady_clock::time_point end_time_ = std::chrono::steady_clock::now();
-  std::chrono::duration<double> used_time_ = std::chrono::duration_cast<std::chrono::duration<double>>(end_time_ - start_time_);
-  if (used_time_.count() > 0.9f) {
-    // std::cout << "Timer1s cost time: " << used_time_.count() << " 秒。" << std::endl;
-    RCLCPP_INFO(this->get_logger(), "Timer1s cost time: %lf 秒", used_time_.count());
+  std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+  std::chrono::duration<double> used_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
+  if (used_time.count() > 0.9f) {
+    std::cout << getCurrentTime() << "Timer1s cost time: " << used_time.count() << " 秒。" << std::endl;
   }
   last_odom_ = current_odom_;
   last_estimate_pose_ = estimate_pose_;
   last_pos_ = current_pos_;
 }
 
-void
-AmclNode::timer3sCallback()
+void AmclNode::timer3sCallback()
 {
 #if 0
   // add icp unit
@@ -1837,24 +1805,20 @@ AmclNode::timer3sCallback()
 #endif
 }
 
-void
-AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  // // handle odometry
-  // RCLCPP_DEBUG(this->get_logger(), "current odom: [x %.4f, y %.4f, yaw %.4f]", 
-  //   msg->pose.pose.position.x, msg->pose.pose.position.y, tf2::getYaw(msg->pose.pose.orientation));
   current_odom_ = *msg;
 }
 
-void
-AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
-  RCLCPP_DEBUG(this->get_logger(), "current vel: [v %.4lf, w %.4lf]", msg->linear.x, msg->angular.z);
-  current_vel_ = *msg;
+  current_velocity_ = *msg;
+  if (current_velocity_.linear.x != 0.0 || current_velocity_.angular.z != 0.0) {
+    last_movement_time_ = rclcpp::Clock().now();
+  }
 }
 
-void
-AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
+void AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
   geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist)
 {
   // step1 calculate delte value of odometry
@@ -1903,23 +1867,19 @@ AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom
   // last_tf_x_ = tf_x_;
   // last_tf_y_ = tf_y_;
   // last_tf_theta_ = tf_theta_;
-  RCLCPP_INFO(this->get_logger(), "plicp delta: %lf", dist);
+  std::cout << getCurrentTime() << "PLICP dist: " << dist << std::endl;
 }
 
-
-bool
-AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf) 
+bool AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf) 
 {
   std::string target_link = "map";
   // std::string source_link = "two_d_lidar";
   std::string source_link = "laser_2d_link";
   try {
     tf = tf_buffer_->lookupTransform(target_link, source_link, tf2::TimePointZero);
-    // RCLCPP_DEBUG(this->get_logger(), "TF %s to %s, [%lf, %lf, %lf]",
-          // source_link.c_str(), target_link.c_str(), tf.transform.translation.x, tf.transform.translation.y, tf2::getYaw(tf.transform.rotation));
     return true;
   } catch (tf2::TransformException & ex) {
-    std::cerr << "Could not get transform from " << source_link << " to " << target_link << ": " << ex.what() << '\n';
+    std::cerr << getCurrentTime() << "Could not get transform from " << source_link << " to " << target_link << ": " << ex.what() << std::endl;
     return false;
   }
 }
@@ -1933,6 +1893,26 @@ bool AmclNode::getOdomPoseFromTopic(double & x, double & y, double & yaw)
   return true;
 }
 
+void AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan)
+{
+  geometry_msgs::msg::PoseStamped odom_to_map;
+  try {
+    tf2::Quaternion q;
+    q.setRPY(0.0f, 0.0f, estimate_pose_.vector.z);
+    tf2::Transform map_to_base_tf(q, tf2::Vector3(estimate_pose_.vector.x, estimate_pose_.vector.y, 0.0f));
+    geometry_msgs::msg::PoseStamped map_to_base_tf_stamp;
+    map_to_base_tf_stamp.header.frame_id = base_frame_id_;
+    map_to_base_tf_stamp.header.stamp = laser_scan->header.stamp;
+    tf2::toMsg(map_to_base_tf.inverse(), map_to_base_tf_stamp.pose);
+    tf_buffer_->transform(map_to_base_tf_stamp, odom_to_map, odom_frame_id_);
+  } catch(tf2::TransformException & e) {
+    std::cerr << getCurrentTime() << " [ERROR] TransformException: " << e.what() << std::endl;
+    std::cerr << "Failed to transform from " << base_frame_id_ << " to " << odom_frame_id_ << std::endl;
+    std::cerr << "estimate_pose_: [" << estimate_pose_.vector.x << ", " << estimate_pose_.vector.y << ", " << estimate_pose_.vector.z << "]" << std::endl;
+    return;
+  }
+  tf2::impl::Converter<true, false>::convert(odom_to_map.pose, latest_tf_);
+}
 
 }  // namespace nav2_amcl
 

@@ -416,14 +416,10 @@ private:
 // timer 50ms 1000ms
 private:
   void initTimer();
-  void timer50msCallback();
   void timer1sCallback();
   void timer3sCallback();
   
-  rclcpp::TimerBase::SharedPtr timer50ms_;
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr estimate_pose_pub_;
   geometry_msgs::msg::Vector3Stamped estimate_pose_;  //  the current estimate pose, Dynamic updates with scan received
-
   rclcpp::TimerBase::SharedPtr timer1s_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_; 
   std_msgs::msg::Bool estimate_pose_status_;
@@ -445,7 +441,6 @@ private:
   // Last odometer position
   nav_msgs::msg::Odometry last_odom_;
   nav_msgs::msg::Odometry current_odom_;
-  geometry_msgs::msg::Twist current_vel_;
   geometry_msgs::msg::Vector3Stamped last_estimate_pose_;
   // use default way to detec robot moved
   bool robot_moved_{false};
@@ -458,15 +453,15 @@ private:
   float icp_x_;
   float icp_y_;
   float icp_yaw_;
-
-private:
   PLICP plicp_;
   geometry_msgs::msg::Vector3 last_pos_;
   geometry_msgs::msg::Vector3 current_pos_;
-
 private:
   bool getOdomPoseFromTopic(double & x, double & y, double & yaw);
-
+  void calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan);
+  
+  rclcpp::Time last_movement_time_;
+  geometry_msgs::msg::Twist current_velocity_;
 };
 
 }  // namespace nav2_amcl
