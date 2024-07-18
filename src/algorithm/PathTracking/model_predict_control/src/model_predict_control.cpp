@@ -21,10 +21,7 @@ namespace model_predict_control
 ModelPredictControl::ModelPredictControl() : Node("model_predict_control")
 {
      initFirstValue();
-     current_pose_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
-          "estimate_pose",
-          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
-          std::bind(&ModelPredictControl::currentPoseCallback, this, std::placeholders::_1));
+
      path_sub_ = this->create_subscription<algorithm_msgs::msg::Path>(
           "algorithm_path",
           rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
@@ -32,6 +29,12 @@ ModelPredictControl::ModelPredictControl() : Node("model_predict_control")
      vel_ = this->create_publisher<geometry_msgs::msg::Twist>(
           "cmd_vel",
           10);
+     
+     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+     timer_ = this->create_wall_timer(
+          std::chrono::milliseconds(20),
+          std::bind(&ModelPredictControl::timerCallback, this));
 }
 
 ModelPredictControl::~ModelPredictControl() 
@@ -258,18 +261,35 @@ void ModelPredictControl::calculateClosestPointOnBezier5(Pose & closest, const P
      }
 }
 
-// main function of ModelPredictControl algorithm 
-void ModelPredictControl::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
+bool ModelPredictControl::getCurrentPose(double & x, double & y, double & yaw)
+{
+     std::string target_link = "map";
+     std::string source_link = "base_footprint";
+     geometry_msgs::msg::TransformStamped tf;
+     try {
+          tf = tf_buffer_->lookupTransform(target_link, source_link, tf2::TimePointZero);
+          x = tf.transform.translation.x;
+          y = tf.transform.translation.y;
+          yaw = tf2::getYaw(tf.transform.rotation);
+          return true;
+     } catch(const std::exception& e) {
+          std::cerr << e.what() << '\n';
+     }
+     return false;
+}
+
+void ModelPredictControl::timerCallback()
 {
      if (!is_path_received_) {
           std::cout << getCurrentTime() << "path is empty, return" << std::endl;
           sendVelocity(0.0f, 0.0f);
           return;
      }
+
      Pose current;
-     current.x = msg->vector.x;
-     current.y = msg->vector.y;
-     current.yaw = msg->vector.z;
+     if (!getCurrentPose(current.x, current.y, current.yaw)) {
+          return;
+     }
      // 切换路径
      static unsigned int path_number = 0;
      Pose path_end;

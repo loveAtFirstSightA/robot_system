@@ -31,6 +31,11 @@
 #include "algorithm_msgs/msg/bezier3.hpp"
 #include "algorithm_msgs/msg/bezier5.hpp"
 
+#include "tf2/utils.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
 namespace pure_pursuit
 {
 struct Vector {
@@ -51,7 +56,6 @@ public:
 private:
     void initParam();
     void initFirstValue();
-    void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
     void calculateTargetOnLine(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Line line);
@@ -73,6 +77,14 @@ private:
     double k_{0.0f};
     double max_v_{1.0f};
     double max_w_{M_PI_2};
+
+private:
+    void timerCallback();
+    bool getCurrentPose(double & x, double & y, double & yaw);
+
+    rclcpp::TimerBase::SharedPtr timer_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 };
 }  // namespace pure_pursuit

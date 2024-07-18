@@ -19,6 +19,8 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(algorithm_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 include_directories(
   include
@@ -33,6 +35,8 @@ set(dependencies
   std_msgs
   geometry_msgs
   algorithm_msgs
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 add_library(${library_name} src/model_predict_control.cpp)

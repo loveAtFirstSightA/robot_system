@@ -29,10 +29,7 @@ StanleyController::StanleyController() : Node("stanley_controller")
 {
      updateParameters();
      initFirstValue();
-     current_pose_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
-          "estimate_pose",
-          rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
-          std::bind(&StanleyController::currentPoseCallback, this, std::placeholders::_1));
+
      path_sub_ = this->create_subscription<algorithm_msgs::msg::Path>(
           "algorithm_path",
           rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
@@ -40,6 +37,12 @@ StanleyController::StanleyController() : Node("stanley_controller")
      vel_ = this->create_publisher<geometry_msgs::msg::Twist>(
           "cmd_vel",
           1);
+     
+     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+     timer_ = this->create_wall_timer(
+          std::chrono::milliseconds(20),
+          std::bind(&StanleyController::timerCallback, this));
 }
 
 StanleyController::~StanleyController() {}
@@ -96,8 +99,24 @@ void StanleyController::pathSubCallback(const algorithm_msgs::msg::Path::SharedP
      is_path_received_ = true;
 }
 
-// 周期： 1000 / 20 = 50 ms = 0.05s
-void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg)
+bool StanleyController::getCurrentPose(double & x, double & y, double & yaw)
+{
+     std::string target_link = "map";
+     std::string source_link = "base_footprint";
+     geometry_msgs::msg::TransformStamped tf;
+     try {
+          tf = tf_buffer_->lookupTransform(target_link, source_link, tf2::TimePointZero);
+          x = tf.transform.translation.x;
+          y = tf.transform.translation.y;
+          yaw = tf2::getYaw(tf.transform.rotation);
+          return true;
+     } catch(const std::exception& e) {
+          std::cerr << e.what() << '\n';
+     }
+     return false;
+}
+
+void StanleyController::timerCallback()
 {
      if (!is_path_received_) {
           std::cout << getCurrentTime() << "Path is empty, return" << std::endl;
@@ -105,9 +124,9 @@ void StanleyController::currentPoseCallback(const geometry_msgs::msg::Vector3Sta
           return;
      }
      Pose current;
-     current.x = msg->vector.x;
-     current.y = msg->vector.y;
-     current.yaw = msg->vector.z;
+     if (!getCurrentPose(current.x, current.y, current.yaw)) {
+          return;
+     }
      // 切换路径
      static unsigned int path_number = 0;
      Pose path_end;

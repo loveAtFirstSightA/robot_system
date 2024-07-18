@@ -23,6 +23,10 @@
 #include "algorithm_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
+#include "tf2/utils.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace stanley_controller
 {
@@ -37,7 +41,6 @@ private:
     void initFirstValue();
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
-    void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     // 计算路径切线的航向角度
     void calculatePathHeadingOnLine(double & heading, /*const Pose & current,*/ const algorithm_msgs::msg::Line & line);
     void calculatePathHeadingOnBezier3(double & heading, const Pose & current, const algorithm_msgs::msg::Bezier3 & bezier3);
@@ -60,7 +63,13 @@ private:
     // algorithm parameters
     double k_;
 
+private:
+    void timerCallback();
+    bool getCurrentPose(double & x, double & y, double & yaw);
 
+    rclcpp::TimerBase::SharedPtr timer_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 };
 }  // namespace stanley_controller

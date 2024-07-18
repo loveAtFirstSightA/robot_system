@@ -25,6 +25,11 @@
 #include "model_predict_control/logger.hpp"
 #include "model_predict_control/common.hpp"
 
+#include "tf2/utils.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
 namespace model_predict_control
 {
 class ModelPredictControl : public rclcpp::Node
@@ -35,7 +40,6 @@ public:
 
 private:
     void initFirstValue();
-    void currentPoseCallback(const geometry_msgs::msg::Vector3Stamped::SharedPtr msg);
     void sendVelocity(const double v, const double w);
     void pathSubCallback(const algorithm_msgs::msg::Path::SharedPtr msg);
     // MPC function
@@ -61,6 +65,13 @@ private:
     bool is_path_received_{false};
     algorithm_msgs::msg::Path path_;
 
+private:
+    void timerCallback();
+    bool getCurrentPose(double & x, double & y, double & yaw);
+
+    rclcpp::TimerBase::SharedPtr timer_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 };
 }  // namespace model_predict_control
