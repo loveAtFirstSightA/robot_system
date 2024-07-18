@@ -720,17 +720,17 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
 
   // Where was the robot when this scan was taken?
   pf_vector_t pose;
-  // if (!getOdomPose(
-  //     latest_odom_pose_, pose.v[0], pose.v[1], pose.v[2],
-  //     laser_scan->header.stamp, base_frame_id_)) 
-  // {
-  //   RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
-  //   return;
-  // }
-  if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) {
+  if (!getOdomPose(
+      latest_odom_pose_, pose.v[0], pose.v[1], pose.v[2],
+      laser_scan->header.stamp, base_frame_id_)) 
+  {
     RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
     return;
   }
+  // if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) {
+  //   RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
+  //   return;
+  // }
 
   pf_vector_t delta = pf_vector_zero();
   bool force_publication = false;
