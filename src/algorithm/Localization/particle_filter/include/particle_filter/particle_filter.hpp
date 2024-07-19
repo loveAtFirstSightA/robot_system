@@ -31,6 +31,12 @@
 
 namespace particle_filter
 {
+struct Pose {
+    double x;
+    double y;
+    double yaw;
+};
+
 class ParticleFilter : public rclcpp::Node
 {
 public:
@@ -41,7 +47,6 @@ private:
     // 读取激光雷达数据 里程计数据 地图数据
     void mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
     void scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
-
     bool getOdom(double & x, double & y, double & yaw);
 
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;

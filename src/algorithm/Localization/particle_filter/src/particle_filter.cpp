@@ -47,14 +47,13 @@ void ParticleFilter::scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPt
           std::cout << getCurrentTime() << "No map reveiced" << std::endl;
           return;
      }
-     
-     // 雷达数据预处理 排除无效的雷达数据
-     double x, y, yaw;
+     Pose odom;
      // 获取里程计信息
-     if (!getOdom(x, y, yaw)) {
+     if (!getOdom(odom.x, odom.y, odom.yaw)) {
           std::cout << getCurrentTime() << "No odometry reveiced" << std::endl;
           return;
      }
+     
 
 }
 
@@ -65,13 +64,11 @@ bool ParticleFilter::getOdom(double & x, double & y, double & yaw)
           tf_pose = tf_buffer_->lookupTransform("base_footprint", "odom", tf2::TimePointZero);
      } catch(const std::exception& e) {
           std::cerr << getCurrentTime() << e.what() << '\n';
-
           return false;
      }
      x = tf_pose.transform.translation.x;
      y = tf_pose.transform.translation.y;
      yaw = tf2::getYaw(tf_pose.transform.rotation);
-
      return true;
 }
 
