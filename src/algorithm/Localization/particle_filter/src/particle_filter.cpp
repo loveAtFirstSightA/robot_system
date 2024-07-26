@@ -53,7 +53,6 @@ void ParticleFilter::scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPt
           std::cout << getCurrentTime() << "No odometry reveiced" << std::endl;
           return;
      }
-     
 
 }
 

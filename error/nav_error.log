@@ -1,0 +1,35 @@
+[planner_server-3] [INFO] [1721987380.177286946] [global_costmap.global_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[controller_server-1] [INFO] [1721987380.177266778] [local_costmap.local_costmap]: SpeedFilter: Using expressed in a percent from maximum speedspeed_limit = 100.000000 + filter_mask_data * -1.000000
+[controller_server-1] [INFO] [1721987380.177312678] [local_costmap.local_costmap]: SpeedFilter: Subscribing to "/speed_filter_mask" topic for filter mask...
+[planner_server-3] [WARN] [1721987380.182629288] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_filter_mask topic. Updating old filter mask.
+[controller_server-1] [WARN] [1721987380.182740602] [local_costmap.local_costmap]: KeepoutFilter: New filter mask arrived from /keepout_filter_mask topic. Updating old filter mask.
+[planner_server-3] [WARN] [1721987380.187538197] [global_costmap.global_costmap]: VirtualWall: New filter mask arrived from /virtualwall_filter_mask topic. Updating old filter mask.
+[controller_server-1] [WARN] [1721987380.187585488] [local_costmap.local_costmap]: VirtualWall: New filter mask arrived from /virtualwall_filter_mask topic. Updating old filter mask.
+[planner_server-3] [WARN] [1721987380.191708755] [global_costmap.global_costmap]: VirtualWall: New filter mask arrived from /virtualwall_filter_mask topic. Updating old filter mask.
+[controller_server-1] [WARN] [1721987380.192665792] [local_costmap.local_costmap]: VirtualWall: New filter mask arrived from /virtualwall_filter_mask topic. Updating old filter mask.
+[controller_server-1] [WARN] [1721987380.200055500] [local_costmap.local_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[planner_server-3] [WARN] [1721987380.200246383] [global_costmap.global_costmap]: SpeedFilter: New filter mask arrived from /speed_filter_mask topic. Updating old filter mask.
+[bt_navigator-5] terminate called after throwing an instance of 'rclcpp::exceptions::RCLError'
+[bt_navigator-5]   what():  client will not receive response, at ./src/rmw_response.cpp:149, at ./src/rcl/service.c:314
+[ERROR] [bt_navigator-5]: process has died [pid 45706, exit code -6, cmd '/home/fcbox/hivebox_ws/install/nav2_bt_navigator/lib/nav2_bt_navigator/bt_navigator --ros-args --log-level info --ros-args -r __node:=bt_navigator --params-file /tmp/tmpsx8r5nor -r /tf:=tf -r /tf_static:=tf_static'].
+[lifecycle_manager-10] [INFO] [1721987388.659162879] [lifecycle_manager_navigation]: Have not received a heartbeat from bt_navigator.
+[lifecycle_manager-10] [ERROR] [1721987388.659214770] [lifecycle_manager_navigation]: CRITICAL FAILURE: SERVER bt_navigator IS DOWN after not receiving a heartbeat for 4000 ms. Shutting down related nodes.
+[lifecycle_manager-10] [INFO] [1721987388.659228755] [lifecycle_manager_navigation]: Terminating bond timer...
+[lifecycle_manager-10] [INFO] [1721987388.659237303] [lifecycle_manager_navigation]: Resetting managed nodes...
+[lifecycle_manager-10] [INFO] [1721987388.659246135] [lifecycle_manager_navigation]: Deactivating waypoint_follower_task
+[waypoint_follower_task-9] [INFO] [1721987388.659549735] [waypoint_follower_task]: Deactivating
+[waypoint_follower_task-9] [INFO] [1721987388.659577713] [waypoint_follower_task]: [fcbox_follow_waypoints] [ActionServer] Deactivating...
+[waypoint_follower_task-9] [INFO] [1721987388.659590391] [waypoint_follower_task]: Destroying bond (waypoint_follower_task) to lifecycle manager.
+[lifecycle_manager-10] [INFO] [1721987388.762222331] [lifecycle_manager_navigation]: Deactivating collision_monitor
+[collision_monitor-8] [INFO] [1721987388.762482690] [collision_monitor]: Deactivating
+[collision_monitor-8] [INFO] [1721987388.762520275] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-10] [INFO] [1721987388.864919689] [lifecycle_manager_navigation]: Deactivating velocity_smoother
+[velocity_smoother-7] [INFO] [1721987388.865146620] [velocity_smoother]: Deactivating
+[velocity_smoother-7] [INFO] [1721987388.865195893] [velocity_smoother]: Destroying bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-10] [INFO] [1721987388.967667313] [lifecycle_manager_navigation]: Deactivating waypoint_follower
+[waypoint_follower-6] [INFO] [1721987388.967822471] [waypoint_follower]: Deactivating
+[waypoint_follower-6] [INFO] [1721987388.967852863] [waypoint_follower]: [follow_waypoints] [ActionServer] Deactivating...
+[waypoint_follower-6] [INFO] [1721987388.967865070] [waypoint_follower]: Destroying bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-10] [INFO] [1721987389.070350285] [lifecycle_manager_navigation]: Deactivating bt_navigator
+
+

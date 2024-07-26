@@ -1,0 +1,15 @@
+[amcl-2] [2024-07-26 18:24:36] Amcl estimate pose: [x -1.02224, y -10.0251, yaw -0.0125855]
+[nav2_interface-3] [2024-07-26 18:24:40] Start switch the map, target status disable, do nothing
+[amcl-2] [2024-07-26 18:24:44]  [INFO] Received request to change AMCL status. Target status: 0, Initial pose: [x: 0, y: 0, yaw: 0]
+[amcl-2] [2024-07-26 18:24:44]  [INFO] AMCL status changed to: 0
+[amcl-2] terminate called after throwing an instance of 'rclcpp::exceptions::RCLError'
+[amcl-2]   what():  failed to send response: client will not receive response, at ./src/rmw_response.cpp:149, at ./src/rcl/service.c:314
+[ERROR] [amcl-2]: process has died [pid 88114, exit code -6, cmd '/home/fcbox/hivebox_ws/install/nav2_amcl/lib/nav2_amcl/amcl --ros-args -r __node:=amcl --params-file /home/fcbox/hivebox_ws/install/nav2_interface/share/nav2_interface/config/params.yaml'].
+[lifecycle_manager-1] [INFO] [1721989488.950404021] [lifecycle_manager_localization]: Have not received a heartbeat from amcl.
+[lifecycle_manager-1] [ERROR] [1721989488.950444672] [lifecycle_manager_localization]: CRITICAL FAILURE: SERVER amcl IS DOWN after not receiving a heartbeat for 4000 ms. Shutting down related nodes.
+[lifecycle_manager-1] [INFO] [1721989488.950453998] [lifecycle_manager_localization]: Terminating bond timer...
+[lifecycle_manager-1] [INFO] [1721989488.950459106] [lifecycle_manager_localization]: Resetting managed nodes...
+[lifecycle_manager-1] [INFO] [1721989488.950464325] [lifecycle_manager_localization]: Deactivating amcl
+
+
+
