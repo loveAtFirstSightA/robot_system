@@ -331,7 +331,6 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
   initial_guess_srv_.reset();
   nomotion_update_srv_.reset();
   // hb
-  init_pose_srv_.reset();
   executor_thread_.reset();  //  to make sure initial_pose_sub_ completely exit
   initial_pose_sub_.reset();
   laser_scan_connection_.disconnect();
@@ -523,60 +522,6 @@ AmclNode::nomotionUpdateCallback(
 }
 
 void
-AmclNode::initPoseCallback(
-    const std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Request> request,
-    std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Response> response)
-{
-  RCLCPP_INFO(get_logger(), "Received request to initialization amcl pose");
-  if (request->init_pose.header.frame_id == "") {
-    RCLCPP_WARN(get_logger(),
-      "The request of frame_id is empty, please input it with global frame_id");
-    response->result = false;
-    response->message = "The request of frame_id is empty, please input it with global frame_id";
-    return;
-  }
-  if (request->init_pose.header.frame_id != global_frame_id_) {
-    RCLCPP_WARN(get_logger(),
-      "The request of frame_id \"%s\" is not in global frame \"%s\"",
-      request->init_pose.header.frame_id.c_str(), global_frame_id_.c_str());
-    response->result = false;
-    response->message = "The request of frame_id is not in global frame, please check";
-    return;
-  }
-  last_published_pose_ = request->init_pose;
-  if (!active_) {
-    init_pose_received_on_inactive = true;
-    RCLCPP_WARN(
-      get_logger(), "Received initial pose request, "
-      "but AMCL is not yet in the active state");
-    response->result = false;
-    response->message = "AMCL node is not yet in the active state";
-    return;
-  }
-  // hb
-  auto initial_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
-  initial_pose = request->init_pose;
-  double sum = initial_pose.pose.pose.position.x + initial_pose.pose.pose.position.y + tf2::getYaw(initial_pose.pose.pose.orientation);
-  if (sum != 0) {
-    change_map_automatic_ = true;
-    set_pos_automatic_.x = initial_pose.pose.pose.position.x;
-    set_pos_automatic_.y = initial_pose.pose.pose.position.y;
-    set_pos_automatic_.z = tf2::getYaw(initial_pose.pose.pose.orientation);
-    RCLCPP_INFO(get_logger(), "Program set init pose automatic");
-  } else {
-    change_map_automatic_ = false;
-    RCLCPP_INFO(get_logger(), "Humble set init pose manual");
-  }
-  RCLCPP_INFO(get_logger(), "Amcl initial pose: [x %6.4lf, y %6.4lf, yaw %6.4lf]",
-    initial_pose.pose.pose.position.x, initial_pose.pose.pose.position.y, tf2::getYaw(initial_pose.pose.pose.orientation));
-  handleInitialPose(initial_pose);
-  response->result = true;
-  response->message = "Amcl initial pose success";
-  RCLCPP_INFO(this->get_logger(), "response->result: %s, response->message: %s",
-    response->result ? "True" : "False", response->message.c_str());
-}
-
-void
 AmclNode::initialPoseReceived(geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
   std::lock_guard<std::recursive_mutex> cfl(mutex_);
@@ -682,7 +627,8 @@ AmclNode::handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg)
   if (first_set_estimate_pose_) {
     first_set_estimate_pose_ = false;
   } else {
-    RCLCPP_INFO(this->get_logger(), "Detection new estimate pose: [%.4lf, %.4lf, %.4lf]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
+    RCLCPP_INFO(this->get_logger(), "Detection new estimate pose: [%.4lf, %.4lf, %.4lf]", 
+      estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
   }
 }
 
@@ -694,6 +640,8 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
   // Since the sensor data is continually being published by the simulator or robot,
   // we don't want our callbacks to fire until we're in the active state
   if (!active_) {return;}
+  tf_broadcast_ = amcl_status_;
+  if (!amcl_status_) {return;}
   if (!first_map_received_) {
     if (checkElapsedTime(2s, last_time_printed_msg_)) {
       RCLCPP_WARN(get_logger(), "Waiting for map....");
@@ -701,8 +649,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     }
     return;
   }
-  scan_ = std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan);
-  plicp_.convertScanToLDP(scan_);
+  plicp_.convertScanToLDP(std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan));
   std::string laser_scan_frame_id = nav2_util::strip_leading_slash(laser_scan->header.frame_id);
   last_laser_received_ts_ = now();
   int laser_index = -1;
@@ -727,10 +674,6 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
     return;
   }
-  // if (!getOdomPoseFromTopic(pose.v[0], pose.v[1], pose.v[2])) {
-  //   RCLCPP_ERROR(get_logger(), "Couldn't determine robot's pose associated with laser scan");
-  //   return;
-  // }
 
   pf_vector_t delta = pf_vector_zero();
   bool force_publication = false;
@@ -952,7 +895,7 @@ AmclNode::publishParticleCloud(const pf_sample_set_t * set)
       set->samples[i].pose.v[2]);
     cloud_with_weights_msg->particles[i].weight = set->samples[i].weight;
   }
-
+  if (!amcl_status_) {return;}
   particle_cloud_pub_->publish(std::move(cloud_with_weights_msg));
 }
 
@@ -1042,7 +985,9 @@ AmclNode::publishAmclPose(
     RCLCPP_DEBUG(get_logger(), "Publishing pose");
     last_published_pose_ = *p;
     first_pose_sent_ = true;
-    pose_pub_->publish(std::move(p));
+    if (amcl_status_) {
+      pose_pub_->publish(std::move(p));
+    }
   } else {
     RCLCPP_WARN(
       get_logger(), "AMCL covariance or pose is NaN, likely due to an invalid "
@@ -1476,7 +1421,6 @@ AmclNode::mapReceived(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   }
   handleMapMessage(*msg);
   first_map_received_ = true;
-  // icp_.converMapToPcl(msg);
 }
 
 void
@@ -1658,10 +1602,11 @@ AmclNode::initServices()
     "request_nomotion_update",
     std::bind(&AmclNode::nomotionUpdateCallback, this, _1, _2, _3));
   
-  init_pose_srv_ = create_service<fcbox_msgs::srv::AmclInitPose>(
-    "amcl_init_pose",
-    std::bind(&AmclNode::initPoseCallback, this, _1, _2));
+  amcl_status_control_srv_ = this->create_service<fcbox_msgs::srv::AmclStatusControl>(
+    "amcl_status_control",
+    std::bind(&AmclNode::amclStatusControlSrvCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
+
 
 void
 AmclNode::initOdometry()
@@ -1729,13 +1674,6 @@ void AmclNode::initTimer()
   timer1s_ = this->create_wall_timer(
     std::chrono::seconds(1),
     std::bind(&AmclNode::timer1sCallback, this));
-
-  // timer3s_ = this->create_wall_timer(
-  //   std::chrono::seconds(3),
-  //   std::bind(&AmclNode::timer3sCallback, this));
-  
-  // 初始化变量
-  estimate_pose_status_.data = true;
   timer1s_first_executed_ = true;
 }
 
@@ -1765,12 +1703,11 @@ void AmclNode::timer1sCallback()
   bool accuracy_status;
   // monitor main function
   estimete_pose_monitor(accuracy_status, last_odom_, current_odom_, last_estimate_pose_, estimate_pose_, delta);
-  estimate_pose_status_.data = accuracy_status;
   auto msg = std_msgs::msg::Bool();
-  msg = estimate_pose_status_;
-  if (!estimate_pose_status_.data) {
+  msg.data = accuracy_status;
+  if (!msg.data) {
     RCLCPP_INFO(this->get_logger(), "estimate pose accuracy status: %s",
-      estimate_pose_status_.data ? "True" : "false");
+      msg.data ? "True" : "false");
   }
   estimate_pose_status_pub_->publish(msg);
   std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
@@ -1781,28 +1718,6 @@ void AmclNode::timer1sCallback()
   last_odom_ = current_odom_;
   last_estimate_pose_ = estimate_pose_;
   last_pos_ = current_pos_;
-}
-
-void AmclNode::timer3sCallback()
-{
-#if 0
-  // add icp unit
-  geometry_msgs::msg::TransformStamped tf;
-  // step 2 获取雷达在地图上的位置
-  if (calculateTfLidarToMap(tf)) {
-    RCLCPP_INFO(this->get_logger(), "Calculate tf lidar to map success");
-    double x = tf.transform.translation.x;
-    double y = tf.transform.translation.y;
-    double yaw = tf2::getYaw(tf.transform.rotation);
-    // step 3 将雷达点变换至地图坐标系
-    // step 4 转换激光点为PCL数据格式
-    icp_.converScanToPcl(scan_, x, y, yaw);
-    // step 5 调用PCLMATCH，完成数据迭代
-    icp_.processICPScanWithMap(100, icp_x_, icp_y_, icp_yaw_);
-  } else {
-    RCLCPP_WARN(this->get_logger(), "Cannot catch tf lidar to map");
-  }
-#endif
 }
 
 void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
@@ -1884,15 +1799,6 @@ bool AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf)
   }
 }
 
-bool AmclNode::getOdomPoseFromTopic(double & x, double & y, double & yaw)
-{
-  x = current_odom_.pose.pose.position.x;
-  y = current_odom_.pose.pose.position.y;
-  yaw = tf2::getYaw(current_odom_.pose.pose.orientation);
-  
-  return true;
-}
-
 void AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan)
 {
   geometry_msgs::msg::PoseStamped odom_to_map;
@@ -1913,6 +1819,70 @@ void AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserS
   }
   tf2::impl::Converter<true, false>::convert(odom_to_map.pose, latest_tf_);
 }
+
+void AmclNode::amclStatusControlSrvCallback(
+    const std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Request> request,
+    std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Response> response)
+{
+  bool target_status = request->target_status;
+  geometry_msgs::msg::PoseStamped init_pose = request->init_pose;
+
+  // Log the received request
+  std::cout << getCurrentTime() << " [INFO] Received request to change AMCL status. Target status: " 
+            << target_status << ", Initial pose: [x: " << init_pose.pose.position.x
+            << ", y: " << init_pose.pose.position.y << ", yaw: " 
+            << tf2::getYaw(init_pose.pose.orientation) << "]" << std::endl;
+
+  // Update AMCL status
+  amcl_status_ = target_status;
+  std::cout << getCurrentTime() << " [INFO] AMCL status changed to: " << amcl_status_ << std::endl;
+
+  if (amcl_status_) {
+    // Validate the initialization pose
+    if (init_pose.header.frame_id.empty()) {
+      std::cout << getCurrentTime() << " [ERROR] Frame ID in the request is empty. Please provide a global frame ID." << std::endl;
+      response->result = response->FAIL;
+      response->msg = "Frame ID is empty. Please provide a global frame ID.";
+      return;
+    }
+
+    if (init_pose.header.frame_id != global_frame_id_) {
+      std::cout << getCurrentTime() << " [ERROR] Frame ID mismatch. Requested frame ID: " 
+                << init_pose.header.frame_id << " does not match global frame ID: " 
+                << global_frame_id_ << std::endl;
+      response->result = response->FAIL;
+      response->msg = "Frame ID mismatch. Please check the frame ID.";
+      return;
+    }
+
+    // Set initialization pose
+    last_published_pose_.header = init_pose.header;
+    last_published_pose_.pose.pose = init_pose.pose;
+
+    if (!active_) {
+      init_pose_received_on_inactive = true;
+      std::cout << getCurrentTime() << " [WARN] Initial pose received, but AMCL is not in the active state." << std::endl;
+      response->result = response->FAIL;
+      response->msg = "AMCL is not in the active state.";
+      return;
+    }
+
+    auto initial_pose = geometry_msgs::msg::PoseWithCovarianceStamped();
+    initial_pose.header = init_pose.header;
+    initial_pose.pose.pose = init_pose.pose;
+
+    std::cout << getCurrentTime() << " [INFO] Setting initial pose: [x: " << initial_pose.pose.pose.position.x
+              << ", y: " << initial_pose.pose.pose.position.y
+              << ", yaw: " << tf2::getYaw(initial_pose.pose.pose.orientation) << "]" << std::endl;
+
+    handleInitialPose(initial_pose);
+  }
+
+  // Set response
+  response->result = response->SUCCESS;
+  response->msg = "AMCL status changed successfully.";
+}
+
 
 }  // namespace nav2_amcl
 

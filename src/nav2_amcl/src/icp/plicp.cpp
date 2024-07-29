@@ -191,7 +191,7 @@ void PLICP::processPLICP()
         x_ += output_.x[0];
         y_ += output_.x[1];
     } else {
-        std::cout << getCurrentTime() << "Cannot perform conversion(plicp)" << std::endl;
+        // std::cout << getCurrentTime() << "Cannot perform conversion(plicp)" << std::endl;
     }
     ld_free(last_scan_ldp_);
     last_scan_ldp_ = scan_ldp_;

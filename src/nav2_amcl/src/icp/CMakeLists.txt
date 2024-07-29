@@ -18,7 +18,7 @@ set(dependencies
   Eigen3
 )
 
-add_library(icp_lib icp.cpp plicp.cpp)
+add_library(icp_lib plicp.cpp)
 # target_include_directories(icp_lib PRIVATE include)
 ament_target_dependencies(icp_lib ${dependencies})
 

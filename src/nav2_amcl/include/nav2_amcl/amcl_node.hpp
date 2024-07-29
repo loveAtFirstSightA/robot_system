@@ -44,15 +44,14 @@
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
 #include "csm/csm.h"
-#include "nav2_amcl/icp/icp.hpp"
 #include "nav2_amcl/icp/plicp.hpp"
-// fc
-#include "fcbox_msgs/srv/amcl_init_pose.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include "fcbox_msgs/srv/amcl_status_control.hpp"
+#include "nav2_amcl/logger.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -403,65 +402,40 @@ protected:
   std::string scan_topic_{"scan"};
   std::string map_topic_{"map"};
 
-// Initialize location using service settings
-private:
-  void initPoseCallback(
-	    const std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Request> request,
-	    std::shared_ptr<fcbox_msgs::srv::AmclInitPose::Response> response);
-
-	rclcpp::Service<fcbox_msgs::srv::AmclInitPose>::SharedPtr init_pose_srv_;
-  bool change_map_automatic_{false};
-	geometry_msgs::msg::Vector3 set_pos_automatic_;
-
-// timer 50ms 1000ms
-private:
-  void initTimer();
-  void timer1sCallback();
-  void timer3sCallback();
-  
-  geometry_msgs::msg::Vector3Stamped estimate_pose_;  //  the current estimate pose, Dynamic updates with scan received
-  rclcpp::TimerBase::SharedPtr timer1s_;
-  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_; 
-  std_msgs::msg::Bool estimate_pose_status_;
-  bool timer1s_first_executed_;
-
-  rclcpp::TimerBase::SharedPtr timer3s_;
-  sensor_msgs::msg::LaserScan::SharedPtr scan_;
-
-// Amcl status monitor
 private:
   void odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
   void velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void amclStatusControlSrvCallback(
+    const std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Request> request,
+    std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Response> response);
+  void initTimer();
+  void timer1sCallback();
+
   void estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
     geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist);
+  void calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan);
+  bool calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf);
 
-  // wheel-velocity-odometry
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
-  // Last odometer position
+  rclcpp::Service<fcbox_msgs::srv::AmclStatusControl>::SharedPtr amcl_status_control_srv_;
+  rclcpp::TimerBase::SharedPtr timer1s_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_;
+
+  bool timer1s_first_executed_;
   nav_msgs::msg::Odometry last_odom_;
   nav_msgs::msg::Odometry current_odom_;
   geometry_msgs::msg::Vector3Stamped last_estimate_pose_;
-  // use default way to detec robot moved
+  geometry_msgs::msg::Vector3Stamped estimate_pose_;  //  the current estimate pose, Dynamic updates with scan received
   bool robot_moved_{false};
   bool first_set_estimate_pose_{true};
-
-private:
-  bool calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf);
-
-  ICP icp_;
-  float icp_x_;
-  float icp_y_;
-  float icp_yaw_;
   PLICP plicp_;
   geometry_msgs::msg::Vector3 last_pos_;
   geometry_msgs::msg::Vector3 current_pos_;
-private:
-  bool getOdomPoseFromTopic(double & x, double & y, double & yaw);
-  void calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan);
-  
   rclcpp::Time last_movement_time_;
   geometry_msgs::msg::Twist current_velocity_;
+  bool amcl_status_{false};
+  
 };
 
 }  // namespace nav2_amcl
