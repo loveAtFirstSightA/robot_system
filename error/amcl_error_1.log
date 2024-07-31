@@ -1,0 +1,17 @@
+[nav2_interface-3] [2024-07-31 10:28:31] Start switch the map, status enable, map path /home/fcbox/.fcbox/map/1709870483105/MAP_release1.4.3_0308_1709870471.yaml
+[nav2_interface-3] [2024-07-31 10:28:31] response->result: SUCCESS, response->msg: Enable nav status success
+[nav2_interface-3] [2024-07-31 10:28:31] Switch the map success, cost time 8.3886e-05s
+[nav2_interface-3] [DEBUG] [map_io]: resolution: 0.05
+[nav2_interface-3] [DEBUG] [map_io]: origin[0]: -20.2453
+[nav2_interface-3] [DEBUG] [map_io]: origin[1]: -30.3451
+[nav2_interface-3] [DEBUG] [map_io]: origin[2]: 0
+[nav2_interface-3] [DEBUG] [map_io]: free_thresh: 0.196
+[nav2_interface-3] [DEBUG] [map_io]: occupied_thresh: 0.65
+[nav2_interface-3] [DEBUG] [map_io]: mode: trinary
+[nav2_interface-3] [DEBUG] [map_io]: negate: 0
+[nav2_interface-3] [INFO] [map_io]: Loading image_file: /home/fcbox/.fcbox/map/1709870483105/MAP_release1.4.3_0308_1709870471.pgm
+[nav2_interface-3] [DEBUG] [map_io]: Read map /home/fcbox/.fcbox/map/1709870483105/MAP_release1.4.3_0308_1709870471.pgm: 1053 X 1103 map @ 0.05 m/cell
+[nav2_interface-3] terminate called after throwing an instance of 'rclcpp::exceptions::RCLError'
+[nav2_interface-3]   what():  failed to send response: client will not receive response, at ./src/rmw_response.cpp:149, at ./src/rcl/service.c:314
+[nav2_interface-3] Magick: abort due to signal 6 (SIGABRT) "Abort"...
+[ERROR] [nav2_interface-3]: process has died [pid 18757, exit code -6, cmd '/home/fcbox/hivebox_ws/install/nav2_interface/lib/nav2_interface/nav2_interface --ros-args --params-file /home/fcbox/hivebox_ws/install/nav2_interface/share/nav2_interface/config/params.yaml'].
