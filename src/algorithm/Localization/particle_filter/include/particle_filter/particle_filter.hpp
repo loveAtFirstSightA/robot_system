@@ -17,6 +17,7 @@
 #ifndef PARTICLE_FILTER__PARTICLE_FILTER_HPP_
 #define PARTICLE_FILTER__PARTICLE_FILTER_HPP_
 
+#include <math.h>
 #include "rclcpp/rclcpp.hpp"
 #include "particle_filter/logger.hpp"
 // #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -31,10 +32,15 @@
 
 namespace particle_filter
 {
-struct Pose {
+struct pf_pose {
     double x;
     double y;
     double yaw;
+};
+
+struct pf {
+    pf_pose pose;
+    double weight;
 };
 
 class ParticleFilter : public rclcpp::Node
@@ -44,6 +50,7 @@ public:
     ~ParticleFilter();
 
 private:
+    void initParticleFilter();
     // 读取激光雷达数据 里程计数据 地图数据
     void mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
     void scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
@@ -57,6 +64,11 @@ private:
 
     bool map_received_{false};
     nav_msgs::msg::OccupancyGrid map_;
+
+private:
+    double normalize(double angle);
+    double angleDiff(double a, double b);
+    void sampleMotionModelOdometry();
 
 
 
