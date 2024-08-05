@@ -120,8 +120,8 @@ void ParticleFilter::sampleMotionModelOdometry()
      delta_rot1_noise = 0.0f;
      delta_ros2_noise = 0.0f;
 
-     delta_ros1_hat = delta_rot1 - ;
-     delta_trans_hat = delta_trans - 
+     // delta_ros1_hat = delta_rot1 - ;
+     // delta_trans_hat = delta_trans - 
 
 }
 
