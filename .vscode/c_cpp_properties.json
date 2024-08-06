@@ -12,7 +12,7 @@
                 "${workspaceFolder}/install/algorithm_msgs/include/algorithm_msgs/",
                 "${workspaceFolder}/src/nav2_amcl/include/",
                 "${workspaceFolder}/src/library/csm/include",
-                "${workspaceFolder}/install/fcbox_msgs/include/fcbox_msgs"
+                "${workspaceFolder}/install/fcbox_msgs/include/fcbox_msgs/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",

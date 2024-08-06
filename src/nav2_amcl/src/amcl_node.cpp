@@ -627,8 +627,8 @@ AmclNode::handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg)
   if (first_set_estimate_pose_) {
     first_set_estimate_pose_ = false;
   } else {
-    RCLCPP_INFO(this->get_logger(), "Detection new estimate pose: [%.4lf, %.4lf, %.4lf]", 
-      estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
+    std::cout << getCurrentTime() << "Detection new estimate pose: [x " << estimate_pose_.vector.x
+      << ", y " << estimate_pose_.vector.y << ", yaw " << estimate_pose_.vector.z << "]" << std::endl;
   }
 }
 
@@ -1685,9 +1685,10 @@ void AmclNode::timer1sCallback()
   if (timer1s_first_executed_) {
     last_odom_ = current_odom_;
     last_estimate_pose_ = estimate_pose_;
-    RCLCPP_INFO(this->get_logger(), "last_odom_: [x %.4lf, y %.4lf, theta %.4lf], last_estimate_pose_:[x %.4lf, y %.4lf, theta %.4lf]",
-      last_odom_.pose.pose.position.x, last_odom_.pose.pose.position.y, tf2::getYaw(last_odom_.pose.pose.orientation),
-      last_estimate_pose_.vector.x, last_estimate_pose_.vector.y, last_estimate_pose_.vector.z);
+    std::cout << getCurrentTime() << "last_odom_: [x " << last_odom_.pose.pose.position.x << ", y " << last_odom_.pose.pose.position.y
+      << ", yaw " << tf2::getYaw(last_odom_.pose.pose.orientation)
+      << "], last_estimate_pose_:[x " << last_estimate_pose_.vector.x << ", y " << last_estimate_pose_.vector.y
+      << ", yaw " << last_estimate_pose_.vector.z << "]" << std::endl;
     plicp_.getTransform(last_pos_.x, last_pos_.y);
     timer1s_first_executed_ = false;
     return;
@@ -1706,8 +1707,7 @@ void AmclNode::timer1sCallback()
   auto msg = std_msgs::msg::Bool();
   msg.data = accuracy_status;
   if (!msg.data) {
-    RCLCPP_INFO(this->get_logger(), "estimate pose accuracy status: %s",
-      msg.data ? "True" : "false");
+    std::cout << getCurrentTime() << "estimate pose accuracy status: " << (msg.data ? "True" : "false") << std::endl;
   }
   estimate_pose_status_pub_->publish(msg);
   std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
@@ -1740,22 +1740,19 @@ void AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last
   double delta_x = current_odom.pose.pose.position.x - last_odom.pose.pose.position.x;
   double delta_y = current_odom.pose.pose.position.y - last_odom.pose.pose.position.y;
   double delta_theta = tf2::getYaw(current_odom.pose.pose.orientation) - tf2::getYaw(last_odom.pose.pose.orientation);
-  RCLCPP_INFO(this->get_logger(), "Delta odometry: dx = %f, dy = %f, dtheta = %f", delta_x, delta_y, delta_theta);
-
+  std::cout << getCurrentTime() << "delta odom: [dx " << delta_x << ", dy " << delta_y << ", dtheta " << delta_theta << "]" << std::endl;
   // step2 calculate delte value of estimate pose
   double delta_estimate_x = current_estimate.vector.x - last_estimate.vector.x;
   double delta_estimate_y = current_estimate.vector.y - last_estimate.vector.y;
   double delta_estimate_theta = current_estimate.vector.z - last_estimate.vector.z;
-  RCLCPP_INFO(this->get_logger(), "Delta estimate: dx = %f, dy = %f, dtheta = %f", delta_estimate_x, delta_estimate_y, delta_estimate_theta);
-
+  std::cout << getCurrentTime() << "delta estimate: [dx " << delta_estimate_x << ", dy " << delta_estimate_y << ", dtheta " << delta_estimate_theta << "]" << std::endl;
   // step3 calculate delta value
   double delta_x_error = delta_x - delta_estimate_x;
   double delta_y_error = delta_y - delta_estimate_y;
   double delta_theta_error = delta_theta - delta_estimate_theta;
-
   double position_error = sqrt(delta_x_error * delta_x_error + delta_y_error * delta_y_error);
   double orientation_error = fabs(delta_theta_error);
-  RCLCPP_INFO(this->get_logger(), "position_error: %lf, orientation_error: %lf", position_error, orientation_error);
+  std::cout << getCurrentTime() << "p_e: " << position_error << ", o_e: " << orientation_error << std::endl;
   const double position_error_threshold = 0.1f;
   const double orientation_error_threshold = 0.174532925f;
   const int consecutive_threshold = 5;
@@ -1771,7 +1768,6 @@ void AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last
   } else {
       status = true;
   }
-  RCLCPP_INFO(this->get_logger(), "The estimate accurate: %s", status ? "True" : "False");
   // // step4 calculate PLICP odometry
   // // calculate delta
   // double delta_tf_x = tf_x_ - last_tf_x_;
@@ -1881,6 +1877,8 @@ void AmclNode::amclStatusControlSrvCallback(
   // Set response
   response->result = response->SUCCESS;
   response->msg = "AMCL status changed successfully.";
+  std::cout << getCurrentTime() << " [INFO] response->result: " << "response->SUCCESS" << std::endl;
+  std::cout << getCurrentTime() << " [INFO] response->msg: " << "AMCL status changed successfully." << std::endl;
 }
 
 

@@ -14,14 +14,17 @@
  limitations under the License.
  */
 
-#ifndef NAV2_AMCL__LOGGER_HPP_
-#define NAV2_AMCL__LOGGER_HPP_
+#ifndef SWITCH_MAP_UNIT_TEST__LOGGER_HPP_
+#define SWITCH_MAP_UNIT_TEST__LOGGER_HPP_
 
 #include <chrono>
 #include <iomanip>
 #include <sstream>
 #include <string>
 #include <ctime>
+
+namespace switch_map_unit_test
+{
 
 inline std::string getCurrentTime() 
 {
@@ -36,4 +39,6 @@ inline std::string getCurrentTime()
     return oss.str();
 }
 
-#endif // NAV2_AMCL__LOGGER_HPP_
+}  //  namespace switch_map_unit_test
+
+#endif // SWITCH_MAP_UNIT_TEST__LOGGER_HPP_
