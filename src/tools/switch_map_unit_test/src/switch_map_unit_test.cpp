@@ -59,16 +59,6 @@ void SwitchMapUnitTest::timerCallback()
      std::cout << getCurrentTime() << "[INFO] " << "    - Map path: " << request->map_path.c_str() << std::endl;
      nav_cli_->async_send_request(
           request, std::bind(&SwitchMapUnitTest::disableNavClientResponseCallback, this, std::placeholders::_1));
-
-     if (!isAmclServerAvailable()) {
-          std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available!" << std::endl;
-          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
-          timer_->cancel();
-          return;
-     } else {
-          std::cout << getCurrentTime() << "[INFO] " << "AMCL server is available" << std::endl;
-     }
-
 }
 
 void SwitchMapUnitTest::enableAmclClientResponseCallback(AmclServiceResponseFuture future)
@@ -109,7 +99,7 @@ void SwitchMapUnitTest::enableNavClientResponseCallback(NavServiceResponseFuture
      std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
      std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
      std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
-
+     
 }
 
 void SwitchMapUnitTest::disableAmclClientResponseCallback(AmclServiceResponseFuture future)
@@ -118,6 +108,15 @@ void SwitchMapUnitTest::disableAmclClientResponseCallback(AmclServiceResponseFut
      std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
      std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
      std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
+
+     if (!isAmclServerAvailable()) {
+          std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available!" << std::endl;
+          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
+          timer_->cancel();
+          return;
+     } else {
+          std::cout << getCurrentTime() << "[INFO] " << "AMCL server is available" << std::endl;
+     }
 
      // enable amcl
      auto request = std::make_shared<fcbox_msgs::srv::AmclStatusControl::Request>();
