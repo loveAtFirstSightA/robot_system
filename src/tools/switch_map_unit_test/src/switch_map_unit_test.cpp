@@ -204,10 +204,10 @@ bool SwitchMapUnitTest::isAmclServerAvailable()
                return true; // Server is available
           } else {
                retry_count++;
-               std::cout << getCurrentTime() << "[INFO] " << "AMCL server not available, retry " << retry_count << "/3..." << std::endl;
+               std::cout << getCurrentTime() << "[INFO] " << "AMCL server not available, retry " << retry_count << "/5..." << std::endl;
           }
      }
-     std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available after 3 attempts." << std::endl;
+     std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available after 5 attempts." << std::endl;
      return false;
 }
 
@@ -219,10 +219,10 @@ bool SwitchMapUnitTest::isNavServerAvailable()
                return true; // Server is available
           } else {
                retry_count++;
-               std::cout << getCurrentTime() << "[INFO] " << "NAV_INTERFACE server not available, retry " << retry_count << "/3..." << std::endl;
+               std::cout << getCurrentTime() << "[INFO] " << "NAV_INTERFACE server not available, retry " << retry_count << "/5..." << std::endl;
           }
      }
-     std::cout << getCurrentTime() << "[ERROR] " << "NAV_INTERFACE server not available after 3 attempts." << std::endl;
+     std::cout << getCurrentTime() << "[ERROR] " << "NAV_INTERFACE server not available after 5 attempts." << std::endl;
      return false;
 }
 
