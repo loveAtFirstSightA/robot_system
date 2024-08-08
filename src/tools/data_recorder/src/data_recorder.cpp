@@ -51,7 +51,7 @@ DataRecorder::DataRecorder() : Node("data_recorder")
     //     std::bind(&DataRecorder::imu_sub_callback, this, std::placeholders::_1));
     // imu_data_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
     //     "/imu_data",
-    //     10,
+    //     100,
     //     std::bind(&DataRecorder::imu_data_sub_callback, this, std::placeholders::_1));
     vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
         "cmd_vel",
@@ -117,6 +117,7 @@ void DataRecorder::odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedP
     //     // << "[a_acc_x " << imu_.angular_velocity.x << ", a_acc_y " << imu_.angular_velocity.y << ", a_acc_z " << imu_.angular_velocity.z << "] imu_yaw: " << tf2::getYaw(imu_.orientation) << ", "
     //     << "cmd_vel: [v " << vel_.linear.x << ", w " << vel_.angular.z << "]"
     //     << " estimate_pose: [x " << tf_pose_.x << ", y " << tf_pose_.y << ", yaw " << tf_pose_.z << "]" << std::endl;
+    
     // // bag package
     // // 模拟 odom_data_pose_.header.stamp.sec 和 odom_data_pose_.header.stamp.nanosec 的值
     // std::time_t sec = odom_data_pose_.header.stamp.sec;
@@ -132,14 +133,18 @@ void DataRecorder::odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedP
     // // 格式化为UTC时间字符串
     // std::tm* gmt = std::gmtime(&tt);
     // char buffer[30];
-    // std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", gmt);
-    // // 打印时间和纳秒部分
-    // std::cout << "[" << buffer << "." << std::setw(9) << std::setfill('0') << nanosec << " UTC] " << "odom_data: [x " << odom_data_pose_.pose.pose.position.x << ", y " << odom_data_pose_.pose.pose.position.y << ", yaw " << tf2::getYaw(odom_data_pose_.pose.pose.orientation) << "] "
-    //     // << "imu_data: [l_acc_x " << imu_data_.linear_acceleration.x << ", l_acc_y " << imu_data_.linear_acceleration.x << ", l_acc_z " << imu_data_.linear_acceleration.z << "]"
-    //     // << "[a_acc_x " << imu_data_.angular_velocity.x << ", a_acc_y " << imu_data_.angular_velocity.y << ", a_acc_z " << imu_data_.angular_velocity.z << "] imu_DataRecorder_yaw: " << tf2::getYaw(imu_data_.orientation) << ", "
+    // std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", gmt);
+
+    // // 提取毫秒部分
+    // std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
+    
+    // // 打印时间和毫秒部分
+    // std::cout << "[" << buffer << "." << std::setw(3) << std::setfill('0') << ms.count() << " UTC] " << "odom_data: [x " << odom_data_pose_.pose.pose.position.x << ", y " << odom_data_pose_.pose.pose.position.y << ", yaw " << tf2::getYaw(odom_data_pose_.pose.pose.orientation) << "] "
+    //     << "imu_data: [l_acc_x " << imu_data_.linear_acceleration.x << ", l_acc_y " << imu_data_.linear_acceleration.x << ", l_acc_z " << imu_data_.linear_acceleration.z << "]"
+    //     << "[a_acc_x " << imu_data_.angular_velocity.x << ", a_acc_y " << imu_data_.angular_velocity.y << ", a_acc_z " << imu_data_.angular_velocity.z << "] imu_DataRecorder_yaw: " << tf2::getYaw(imu_data_.orientation) << ", "
     //     // << "imu: [l_acc_x " << imu_.linear_acceleration.x << ", l_acc_y " << imu_.linear_acceleration.x << ", l_acc_z " << imu_.linear_acceleration.z << "]"
     //     // << "[a_acc_x " << imu_.angular_velocity.x << ", a_acc_y " << imu_.angular_velocity.y << ", a_acc_z " << imu_.angular_velocity.z << "] imu_yaw: " << tf2::getYaw(imu_.orientation) << ", "
-    //     << "cmd_vel: [v " << vel_.linear.x << ", w " << vel_.angular.z << "]"
+    //     // << "cmd_vel: [v " << vel_.linear.x << ", w " << vel_.angular.z << "]"
     //     << " estimate_pose: [x " << tf_pose_.x << ", y " << tf_pose_.y << ", yaw " << tf_pose_.z << "]" << std::endl;
 }
 

@@ -17,24 +17,23 @@
 #ifndef DATA_RECORDER__LOGGER_HPP_
 #define DATA_RECORDER__LOGGER_HPP_
 
-#include <iostream>
+#include <chrono>
 #include <iomanip>
-#include <ctime>
 #include <sstream>
 #include <string>
+#include <ctime>
 
 inline std::string getCurrentTime() 
 {
-    std::time_t now = std::time(nullptr);
-    std::tm* local_time = std::localtime(&now);
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    std::tm* local_time = std::localtime(&now_time_t);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
     std::ostringstream oss;
-    oss << std::put_time(local_time, "[%Y-%m-%d %H:%M:%S] ");
-    return oss.str();
-}
+    oss << std::put_time(local_time, "[%Y-%m-%d %H:%M:%S");
+    oss << '.' << std::setw(3) << std::setfill('0') << ms.count() << "] ";
 
-inline void logMessage(const std::string& message) 
-{
-    std::cout << "[" << getCurrentTime() << "] " << message << std::endl;
+    return oss.str();
 }
 
 #endif // NAV2_AMCL__LOGGER_HPP_
