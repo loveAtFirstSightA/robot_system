@@ -21,11 +21,11 @@ namespace switch_map_unit_test
 
 SwitchMapUnitTest::SwitchMapUnitTest() : Node("switch_map_unit_test")
 {
-     std::cout << getCurrentTime() << "[INFO] " << "Start execute unit test of switch map" << std::endl;
+     std::cout << LOG(INFO) << "Start execute unit test of switch map" << std::endl;
      amcl_cli_ = this->create_client<fcbox_msgs::srv::AmclStatusControl>("amcl_status_control");
-     std::cout << getCurrentTime() << "[INFO] " << "Create client to request amcl_status_control" << std::endl;
+     std::cout << LOG(INFO) << "Create client to request amcl_status_control" << std::endl;
      nav_cli_ = this->create_client<fcbox_msgs::srv::NavStatusControl>("nav_status_control");
-     std::cout << getCurrentTime() << "[INFO] " << "Create client to request nav_status_control" << std::endl;
+     std::cout << LOG(INFO) << "Create client to request nav_status_control" << std::endl;
      timer_ = this->create_wall_timer(std::chrono::seconds(5), std::bind(&SwitchMapUnitTest::timerCallback, this));
 
      unit_test_count_ = 0;
@@ -38,25 +38,25 @@ SwitchMapUnitTest::~SwitchMapUnitTest() {}
 void SwitchMapUnitTest::timerCallback()
 {
      std::cout << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "Unit test count: " << ++unit_test_count_ << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "Timer event - switch map" << std::endl;
+     std::cout << LOG(INFO) << "Unit test count: " << ++unit_test_count_ << std::endl;
+     std::cout << LOG(INFO) << "Timer event - switch map" << std::endl;
 
      // disable nav
      if (!isNavServerAvailable()) {
-          std::cout << getCurrentTime() << "[ERROR] " << "NAV_INTERFACE server not available!" << std::endl;
-          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
+          std::cout << LOG(ERROR) << "NAV_INTERFACE server not available!" << std::endl;
+          std::cout << LOG(INFO) << "Cancel timer" << std::endl;
           timer_->cancel();
           return;
      } else {
-          std::cout << getCurrentTime() << "[INFO] " << "NAV_INTERFACE server is available" << std::endl;
+          std::cout << LOG(INFO) << "NAV_INTERFACE server is available" << std::endl;
      }
 
      auto request = std::make_shared<fcbox_msgs::srv::NavStatusControl::Request>();
      request->target_status = false;
      request->map_path = "";
-     std::cout << getCurrentTime() << "[INFO] " << "Sending request to " << (request->target_status ? "enable" : "disable") << " navigation"  << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Target_status: " << request->target_status << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Map path: " << request->map_path.c_str() << std::endl;
+     std::cout << LOG(INFO) << "Sending request to " << (request->target_status ? "enable" : "disable") << " navigation"  << std::endl;
+     std::cout << LOG(INFO) << "    - Target_status: " << request->target_status << std::endl;
+     std::cout << LOG(INFO) << "    - Map path: " << request->map_path.c_str() << std::endl;
      nav_cli_->async_send_request(
           request, std::bind(&SwitchMapUnitTest::disableNavClientResponseCallback, this, std::placeholders::_1));
 }
@@ -64,17 +64,17 @@ void SwitchMapUnitTest::timerCallback()
 void SwitchMapUnitTest::enableAmclClientResponseCallback(AmclServiceResponseFuture future)
 {
      auto response = future.get();
-     std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
+     std::cout << LOG(INFO) << "Received response" << std::endl;
+     std::cout << LOG(INFO) << "    - Result: " << response->result << std::endl;
+     std::cout << LOG(INFO) << "    - Msg: " << response->msg << std::endl;
 
      if (!isNavServerAvailable()) {
-          std::cout << getCurrentTime() << "[ERROR] " << "NAV_INTERFACE server not available!" << std::endl;
-          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
+          std::cout << LOG(ERROR) << "NAV_INTERFACE server not available!" << std::endl;
+          std::cout << LOG(INFO) << "Cancel timer" << std::endl;
           timer_->cancel();
           return;
      } else {
-          std::cout << getCurrentTime() << "[INFO] " << "NAV_INTERFACE server is available" << std::endl;
+          std::cout << LOG(INFO) << "NAV_INTERFACE server is available" << std::endl;
      }
 
      // enable nav
@@ -86,9 +86,9 @@ void SwitchMapUnitTest::enableAmclClientResponseCallback(AmclServiceResponseFutu
      } else {
           request->map_path = b_map_path_;
      }
-     std::cout << getCurrentTime() << "[INFO] " << "Sending request to " << (request->target_status ? "enable" : "disable") << " navigation"  << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Target_status: " << request->target_status << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Map path: " << request->map_path.c_str() << std::endl;
+     std::cout << LOG(INFO) << "Sending request to " << (request->target_status ? "enable" : "disable") << " navigation"  << std::endl;
+     std::cout << LOG(INFO) << "    - Target_status: " << request->target_status << std::endl;
+     std::cout << LOG(INFO) << "    - Map path: " << request->map_path.c_str() << std::endl;
      nav_cli_->async_send_request(
           request, std::bind(&SwitchMapUnitTest::enableNavClientResponseCallback, this, std::placeholders::_1));
 }
@@ -96,26 +96,26 @@ void SwitchMapUnitTest::enableAmclClientResponseCallback(AmclServiceResponseFutu
 void SwitchMapUnitTest::enableNavClientResponseCallback(NavServiceResponseFuture future)
 {
      auto response = future.get();
-     std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
-     
+     std::cout << LOG(INFO) << "Received response" << std::endl;
+     std::cout << LOG(INFO) << "    - Result: " << response->result << std::endl;
+     std::cout << LOG(INFO) << "    - Msg: " << response->msg << std::endl;
+
 }
 
 void SwitchMapUnitTest::disableAmclClientResponseCallback(AmclServiceResponseFuture future)
 {
      auto response = future.get();
-     std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
+     std::cout << LOG(INFO) << "Received response" << std::endl;
+     std::cout << LOG(INFO) << "    - Result: " << response->result << std::endl;
+     std::cout << LOG(INFO) << "    - Msg: " << response->msg << std::endl;
 
      if (!isAmclServerAvailable()) {
-          std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available!" << std::endl;
-          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
+          std::cout << LOG(ERROR) << "AMCL server not available!" << std::endl;
+          std::cout << LOG(INFO) << "Cancel timer" << std::endl;
           timer_->cancel();
           return;
      } else {
-          std::cout << getCurrentTime() << "[INFO] " << "AMCL server is available" << std::endl;
+          std::cout << LOG(INFO) << "AMCL server is available" << std::endl;
      }
 
      // enable amcl
@@ -131,14 +131,14 @@ void SwitchMapUnitTest::disableAmclClientResponseCallback(AmclServiceResponseFut
      request->init_pose.pose.orientation.y = 0.0f;
      request->init_pose.pose.orientation.z = 0.0f;
 
-     std::cout << getCurrentTime() << "[INFO] " << "Sending request to " << (request->target_status ? "enable" : "disable") << " amcl" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Frame ID: " << request->init_pose.header.frame_id << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Timestamp: " << request->init_pose.header.stamp.sec << "." << request->init_pose.header.stamp.nanosec << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Position: (" 
+     std::cout << LOG(INFO) << "Sending request to " << (request->target_status ? "enable" : "disable") << " amcl" << std::endl;
+     std::cout << LOG(INFO) << "    - Frame ID: " << request->init_pose.header.frame_id << std::endl;
+     std::cout << LOG(INFO) << "    - Timestamp: " << request->init_pose.header.stamp.sec << "." << request->init_pose.header.stamp.nanosec << std::endl;
+     std::cout << LOG(INFO) << "    - Position: (" 
                << request->init_pose.pose.position.x << ", " 
                << request->init_pose.pose.position.y << ", " 
                << request->init_pose.pose.position.z << ")" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Orientation: ("
+     std::cout << LOG(INFO) << "    - Orientation: ("
                << request->init_pose.pose.orientation.w << ", "
                << request->init_pose.pose.orientation.x << ", "
                << request->init_pose.pose.orientation.y << ", "
@@ -152,17 +152,17 @@ void SwitchMapUnitTest::disableAmclClientResponseCallback(AmclServiceResponseFut
 void SwitchMapUnitTest::disableNavClientResponseCallback(NavServiceResponseFuture future)
 {
      auto response = future.get();
-     std::cout << getCurrentTime() << "[INFO] " << "Received response" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Result: " << response->result << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Msg: " << response->msg << std::endl;
+     std::cout << LOG(INFO) << "Received response" << std::endl;
+     std::cout << LOG(INFO) << "    - Result: " << response->result << std::endl;
+     std::cout << LOG(INFO) << "    - Msg: " << response->msg << std::endl;
 
      if (!isAmclServerAvailable()) {
-          std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available!" << std::endl;
-          std::cout << getCurrentTime() << "[INFO] " << "Cancel timer" << std::endl;
+          std::cout << LOG(ERROR) << "AMCL server not available!" << std::endl;
+          std::cout << LOG(INFO) << "Cancel timer" << std::endl;
           timer_->cancel();
           return;
      } else {
-          std::cout << getCurrentTime() << "[INFO] " << "AMCL server is available" << std::endl;
+          std::cout << LOG(INFO) << "AMCL server is available" << std::endl;
      }
 
      // disable amcl
@@ -178,14 +178,14 @@ void SwitchMapUnitTest::disableNavClientResponseCallback(NavServiceResponseFutur
      request->init_pose.pose.orientation.y = 0.0f;
      request->init_pose.pose.orientation.z = 0.0f;
 
-     std::cout << getCurrentTime() << "[INFO] " << "Sending request to " << (request->target_status ? "enable" : "disable") << " amcl" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Frame ID: " << request->init_pose.header.frame_id << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Timestamp: " << request->init_pose.header.stamp.sec << "." << request->init_pose.header.stamp.nanosec << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Position: (" 
+     std::cout << LOG(INFO) << "Sending request to " << (request->target_status ? "enable" : "disable") << " amcl" << std::endl;
+     std::cout << LOG(INFO) << "    - Frame ID: " << request->init_pose.header.frame_id << std::endl;
+     std::cout << LOG(INFO) << "    - Timestamp: " << request->init_pose.header.stamp.sec << "." << request->init_pose.header.stamp.nanosec << std::endl;
+     std::cout << LOG(INFO) << "    - Position: (" 
                << request->init_pose.pose.position.x << ", " 
                << request->init_pose.pose.position.y << ", " 
                << request->init_pose.pose.position.z << ")" << std::endl;
-     std::cout << getCurrentTime() << "[INFO] " << "    - Orientation: ("
+     std::cout << LOG(INFO) << "    - Orientation: ("
                << request->init_pose.pose.orientation.w << ", "
                << request->init_pose.pose.orientation.x << ", "
                << request->init_pose.pose.orientation.y << ", "
@@ -203,10 +203,10 @@ bool SwitchMapUnitTest::isAmclServerAvailable()
                return true; // Server is available
           } else {
                retry_count++;
-               std::cout << getCurrentTime() << "[INFO] " << "AMCL server not available, retry " << retry_count << "/5..." << std::endl;
+               std::cout << LOG(INFO) << "AMCL server not available, retry " << retry_count << "/5..." << std::endl;
           }
      }
-     std::cout << getCurrentTime() << "[ERROR] " << "AMCL server not available after 5 attempts." << std::endl;
+     std::cout << LOG(ERROR) << "AMCL server not available after 5 attempts." << std::endl;
      return false;
 }
 
@@ -218,10 +218,10 @@ bool SwitchMapUnitTest::isNavServerAvailable()
                return true; // Server is available
           } else {
                retry_count++;
-               std::cout << getCurrentTime() << "[INFO] " << "NAV_INTERFACE server not available, retry " << retry_count << "/5..." << std::endl;
+               std::cout << LOG(INFO) << "NAV_INTERFACE server not available, retry " << retry_count << "/5..." << std::endl;
           }
      }
-     std::cout << getCurrentTime() << "[ERROR] " << "NAV_INTERFACE server not available after 5 attempts." << std::endl;
+     std::cout << LOG(ERROR) << "NAV_INTERFACE server not available after 5 attempts." << std::endl;
      return false;
 }
 
