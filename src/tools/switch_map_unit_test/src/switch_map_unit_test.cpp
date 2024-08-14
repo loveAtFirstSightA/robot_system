@@ -29,8 +29,8 @@ SwitchMapUnitTest::SwitchMapUnitTest() : Node("switch_map_unit_test")
      timer_ = this->create_wall_timer(std::chrono::seconds(5), std::bind(&SwitchMapUnitTest::timerCallback, this));
 
      unit_test_count_ = 0;
-     a_map_path_ = "/home/fcbox/.fcbox/map/1717573160772/MAP_-1A楼地图_1717573160.yaml";
-     b_map_path_ = "/home/fcbox/.fcbox/map/1721110225254/MAP_20floor_1721110405.yaml";
+     a_map_path_ = "/home/lio/robot_system/maps/factory.yaml";
+     b_map_path_ = "/home/lio/robot_system/maps/factory.yaml";
 }
 
 SwitchMapUnitTest::~SwitchMapUnitTest() {}
