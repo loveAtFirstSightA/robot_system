@@ -17,7 +17,7 @@
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu11",
+            "cStandard": "gnu99",
             "cppStandard": "c++17"
         }
     ],

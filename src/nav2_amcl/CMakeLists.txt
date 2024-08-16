@@ -19,8 +19,8 @@ find_package(nav2_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(fcbox_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(csm REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
 
 nav2_package()
 
@@ -36,7 +36,6 @@ add_subdirectory(src/pf)
 add_subdirectory(src/map)
 add_subdirectory(src/motion_model)
 add_subdirectory(src/sensors)
-add_subdirectory(src/icp)
 
 set(executable_name amcl)
 
@@ -73,8 +72,7 @@ set(dependencies
   pluginlib
   fcbox_msgs
   std_msgs
-  csm
-  Eigen3
+  spdlog
 )
 
 ament_target_dependencies(${executable_name}
@@ -83,6 +81,7 @@ ament_target_dependencies(${executable_name}
 
 target_link_libraries(${executable_name}
   ${library_name}
+  fmt::fmt
 )
 
 ament_target_dependencies(${library_name}
@@ -90,7 +89,7 @@ ament_target_dependencies(${library_name}
 )
 
 target_link_libraries(${library_name}
-  map_lib pf_lib sensors_lib icp_lib
+  map_lib pf_lib sensors_lib
 )
 
 rclcpp_components_register_nodes(${library_name} "nav2_amcl::AmclNode")
@@ -130,7 +129,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name} pf_lib sensors_lib motions_lib map_lib icp_lib)
+ament_export_libraries(${library_name} pf_lib sensors_lib motions_lib map_lib)
 ament_export_dependencies(${dependencies})
 pluginlib_export_plugin_description_file(nav2_amcl plugins.xml)
 ament_package()

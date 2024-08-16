@@ -61,7 +61,7 @@ using nav2_util::geometry_utils::orientationAroundZAxis;
 AmclNode::AmclNode(const rclcpp::NodeOptions & options)
 : nav2_util::LifecycleNode("amcl", "", options)
 {
-  RCLCPP_INFO(get_logger(), "Creating");
+  spdlog::info("Creating");
 
   add_parameter(
     "alpha1", rclcpp::ParameterValue(0.2),
@@ -235,7 +235,7 @@ AmclNode::~AmclNode()
 nav2_util::CallbackReturn
 AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
-  RCLCPP_INFO(get_logger(), "Configuring");
+  spdlog::info("Configuring");
   callback_group_ = create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive, false);
   initParameters();
@@ -246,7 +246,6 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
   initPubSub();
   initServices();
   initOdometry();
-  initTimer();
   executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   executor_->add_callback_group(callback_group_, get_node_base_interface());
   executor_thread_ = std::make_unique<nav2_util::NodeThread>(executor_);
@@ -256,7 +255,7 @@ AmclNode::on_configure(const rclcpp_lifecycle::State & /*state*/)
 nav2_util::CallbackReturn
 AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
-  RCLCPP_INFO(get_logger(), "Activating");
+  spdlog::info("Activating");
 
   // Lifecycle publishers must be explicitly activated
   pose_pub_->on_activate();
@@ -300,7 +299,7 @@ AmclNode::on_activate(const rclcpp_lifecycle::State & /*state*/)
 nav2_util::CallbackReturn
 AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
-  RCLCPP_INFO(get_logger(), "Deactivating");
+  spdlog::info("Deactivating");
 
   active_ = false;
 
@@ -321,7 +320,7 @@ AmclNode::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 nav2_util::CallbackReturn
 AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
-  RCLCPP_INFO(get_logger(), "Cleaning up");
+  spdlog::info("Cleaning up");
 
   executor_thread_.reset();
 
@@ -394,7 +393,7 @@ AmclNode::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 nav2_util::CallbackReturn
 AmclNode::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
-  RCLCPP_INFO(get_logger(), "Shutting down");
+  spdlog::info("Shutting down");
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
@@ -491,12 +490,12 @@ AmclNode::globalLocalizationCallback(
 {
   std::lock_guard<std::recursive_mutex> cfl(mutex_);
 
-  RCLCPP_INFO(get_logger(), "Initializing with uniform distribution");
+  spdlog::info("Initializing with uniform distribution");
 
   pf_init_model(
     pf_, (pf_init_model_fn_t)AmclNode::uniformPoseGenerator,
     reinterpret_cast<void *>(map_));
-  RCLCPP_INFO(get_logger(), "Global initialisation done!");
+  spdlog::info("Global initialisation done!");
   initial_pose_is_known_ = true;
   pf_init_ = false;
 }
@@ -517,7 +516,7 @@ AmclNode::nomotionUpdateCallback(
   const std::shared_ptr<std_srvs::srv::Empty::Request>/*req*/,
   std::shared_ptr<std_srvs::srv::Empty::Response>/*res*/)
 {
-  RCLCPP_INFO(get_logger(), "Requesting no-motion update");
+  spdlog::info("Requesting no-motion update");
   force_update_ = true;
 }
 
@@ -526,7 +525,7 @@ AmclNode::initialPoseReceived(geometry_msgs::msg::PoseWithCovarianceStamped::Sha
 {
   std::lock_guard<std::recursive_mutex> cfl(mutex_);
 
-  RCLCPP_INFO(get_logger(), "initialPoseReceived");
+  spdlog::info("initialPoseReceived");
 
   if (msg->header.frame_id == "") {
     // This should be removed at some point
@@ -553,6 +552,9 @@ AmclNode::initialPoseReceived(geometry_msgs::msg::PoseWithCovarianceStamped::Sha
       "but AMCL is not yet in the active state");
     return;
   }
+  spdlog::warn("AMCL receives a request to set the initial pose from rviz2 or test APP");
+  amcl_status_ = true;
+  spdlog::warn("AMCL has been set to enabled state");
   handleInitialPose(*msg);
 }
 
@@ -592,8 +594,7 @@ AmclNode::handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg)
 
   // Transform into the global frame
 
-  RCLCPP_INFO(
-    get_logger(), "Setting pose (%.6f): %.3f %.3f %.3f",
+  spdlog::info("Setting pose ({:.6f}): [x {:.4f}, y {:.4f}, yaw {:.4f}]",
     now().nanoseconds() * 1e-9,
     pose_new.getOrigin().x(),
     pose_new.getOrigin().y(),
@@ -624,12 +625,6 @@ AmclNode::handleInitialPose(geometry_msgs::msg::PoseWithCovarianceStamped & msg)
   estimate_pose_.vector.y = pose_new.getOrigin().y();
   estimate_pose_.vector.z = tf2::getYaw(pose_new.getRotation());
   initial_pose_is_known_ = true;
-  if (first_set_estimate_pose_) {
-    first_set_estimate_pose_ = false;
-  } else {
-    std::cout << getCurrentTime() << "Detection new estimate pose: [x " << estimate_pose_.vector.x
-      << ", y " << estimate_pose_.vector.y << ", yaw " << estimate_pose_.vector.z << "]" << std::endl;
-  }
 }
 
 void
@@ -649,7 +644,6 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     }
     return;
   }
-  plicp_.convertScanToLDP(std::const_pointer_cast<sensor_msgs::msg::LaserScan>(laser_scan));
   std::string laser_scan_frame_id = nav2_util::strip_leading_slash(laser_scan->header.frame_id);
   last_laser_received_ts_ = now();
   int laser_index = -1;
@@ -743,7 +737,7 @@ AmclNode::laserReceived(sensor_msgs::msg::LaserScan::ConstSharedPtr laser_scan)
     if (tf_broadcast_ == true) {
       auto current_time = rclcpp::Clock().now();
       auto time_since_last_movement = current_time - last_movement_time_;
-      if (time_since_last_movement.seconds() >= 300.0) {
+      if (time_since_last_movement.seconds() >= 600.0) {
         // IMU has temperature drift phenomenon
         calculateMaptoOdomTransformWithImu(laser_scan);
       }
@@ -798,9 +792,20 @@ bool AmclNode::shouldUpdateFilter(const pf_vector_t pose, pf_vector_t & delta)
   bool update = fabs(delta.v[0]) > d_thresh_ ||
     fabs(delta.v[1]) > d_thresh_ ||
     fabs(delta.v[2]) > a_thresh_;
+  if (update) {
+    auto now = std::chrono::steady_clock::now();
+    if (last_update_time_ != std::chrono::steady_clock::time_point()) {
+      auto interval = std::chrono::duration_cast<std::chrono::seconds>(now - last_update_time_).count();
+      if (interval > 600 && fabs(delta.v[0]) <= d_thresh_ && fabs(delta.v[1]) <= d_thresh_ && fabs(delta.v[2]) > a_thresh_) {
+        spdlog::info("Time interval between two true updates: {} seconds", interval);
+        spdlog::info("Not updating filter");
+        pf_odom_pose_ = pose;
+        update = false;
+      }
+    }
+    last_update_time_ = now;
+  }
   update = update || force_update_;
-  // hb
-  robot_moved_ = update;
 
   return update;
 }
@@ -1003,11 +1008,10 @@ AmclNode::publishAmclPose(
   estimate_pose_.vector.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
   estimate_pose_.vector.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
   estimate_pose_.vector.z = hyps[max_weight_hyp].pf_pose_mean.v[2];
-  std::cout << getCurrentTime() << "Amcl estimate pose: "
-    << "[x " << hyps[max_weight_hyp].pf_pose_mean.v[0]
-    << ", y " << hyps[max_weight_hyp].pf_pose_mean.v[1]
-    << ", yaw " << hyps[max_weight_hyp].pf_pose_mean.v[2]
-    << "]" << std::endl;
+  spdlog::info("Amcl estimate pose: [x {:.4f}, y {:.4f}, yaw {:.4f}]", 
+    hyps[max_weight_hyp].pf_pose_mean.v[0], 
+    hyps[max_weight_hyp].pf_pose_mean.v[1], 
+    hyps[max_weight_hyp].pf_pose_mean.v[2]);
 }
 
 void
@@ -1056,7 +1060,7 @@ AmclNode::sendMapToOdomTransform(const tf2::TimePoint & transform_expiration)
 nav2_amcl::Laser *
 AmclNode::createLaserObject()
 {
-  RCLCPP_INFO(get_logger(), "createLaserObject");
+  spdlog::info("createLaserObject");
 
   if (sensor_model_type_ == "beam") {
     return new nav2_amcl::BeamModel(
@@ -1428,8 +1432,7 @@ AmclNode::handleMapMessage(const nav_msgs::msg::OccupancyGrid & msg)
 {
   std::lock_guard<std::recursive_mutex> cfl(mutex_);
 
-  RCLCPP_INFO(
-    get_logger(), "Received a %d X %d map @ %.3f m/pix",
+  spdlog::info("Received a {} X {} map @ {:.3f} m/pix",
     msg.info.width,
     msg.info.height,
     msg.info.resolution);
@@ -1510,7 +1513,7 @@ AmclNode::convertMap(const nav_msgs::msg::OccupancyGrid & map_msg)
 void
 AmclNode::initTransforms()
 {
-  RCLCPP_INFO(get_logger(), "initTransforms");
+  spdlog::info("initTransforms");
 
   // Initialize transform listener and broadcaster
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
@@ -1552,7 +1555,7 @@ AmclNode::initMessageFilters()
 void
 AmclNode::initPubSub()
 {
-  RCLCPP_INFO(get_logger(), "initPubSub");
+  spdlog::info("initPubSub");
 
   particle_cloud_pub_ = create_publisher<nav2_msgs::msg::ParticleCloud>(
     "particle_cloud",
@@ -1584,7 +1587,7 @@ AmclNode::initPubSub()
     1,
     std::bind(&AmclNode::velSubCallback, this, std::placeholders::_1));
 
-  RCLCPP_INFO(get_logger(), "Subscribed to map topic.");
+  spdlog::info("Subscribed to map topic.");
 }
 
 void
@@ -1663,69 +1666,21 @@ AmclNode::initParticleFilter()
   memset(&pf_odom_pose_, 0, sizeof(pf_odom_pose_));
 }
 
-void AmclNode::initLaserScan()
+void
+AmclNode::initLaserScan()
 {
   scan_error_count_ = 0;
   last_laser_received_ts_ = rclcpp::Time(0);
 }
 
-void AmclNode::initTimer()
-{
-  timer1s_ = this->create_wall_timer(
-    std::chrono::seconds(1),
-    std::bind(&AmclNode::timer1sCallback, this));
-  timer1s_first_executed_ = true;
-}
-
-void AmclNode::timer1sCallback()
-{
-  if (!initial_pose_is_known_) {
-    return;
-  }
-  if (timer1s_first_executed_) {
-    last_odom_ = current_odom_;
-    last_estimate_pose_ = estimate_pose_;
-    std::cout << getCurrentTime() << "last_odom_: [x " << last_odom_.pose.pose.position.x << ", y " << last_odom_.pose.pose.position.y
-      << ", yaw " << tf2::getYaw(last_odom_.pose.pose.orientation)
-      << "], last_estimate_pose_:[x " << last_estimate_pose_.vector.x << ", y " << last_estimate_pose_.vector.y
-      << ", yaw " << last_estimate_pose_.vector.z << "]" << std::endl;
-    plicp_.getTransform(last_pos_.x, last_pos_.y);
-    timer1s_first_executed_ = false;
-    return;
-  }
-  if (!robot_moved_) {
-    return;
-  }
-  std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-  plicp_.getTransform(current_pos_.x, current_pos_.y);
-  double delta_pos_x = std::fabs(current_pos_.x - last_pos_.x);
-  double delta_pos_y = std::fabs(current_pos_.y - last_pos_.y);
-  double delta = std::sqrt(std::pow(delta_pos_x, 2) + std::pow(delta_pos_y, 2));
-  bool accuracy_status;
-  // monitor main function
-  estimete_pose_monitor(accuracy_status, last_odom_, current_odom_, last_estimate_pose_, estimate_pose_, delta);
-  auto msg = std_msgs::msg::Bool();
-  msg.data = accuracy_status;
-  if (!msg.data) {
-    std::cout << getCurrentTime() << "estimate pose accuracy status: " << (msg.data ? "True" : "false") << std::endl;
-  }
-  estimate_pose_status_pub_->publish(msg);
-  std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
-  std::chrono::duration<double> used_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
-  if (used_time.count() > 0.9f) {
-    std::cout << getCurrentTime() << "Timer1s cost time: " << used_time.count() << " 秒。" << std::endl;
-  }
-  last_odom_ = current_odom_;
-  last_estimate_pose_ = estimate_pose_;
-  last_pos_ = current_pos_;
-}
-
 void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  current_odom_ = *msg;
+  // TODO
+  auto m = msg;
 }
 
-void AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void
+AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
   current_velocity_ = *msg;
   if (current_velocity_.linear.x != 0.0 || current_velocity_.angular.z != 0.0) {
@@ -1733,69 +1688,8 @@ void AmclNode::velSubCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
   }
 }
 
-void AmclNode::estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
-  geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist)
-{
-  // step1 calculate delte value of odometry
-  double delta_x = current_odom.pose.pose.position.x - last_odom.pose.pose.position.x;
-  double delta_y = current_odom.pose.pose.position.y - last_odom.pose.pose.position.y;
-  double delta_theta = tf2::getYaw(current_odom.pose.pose.orientation) - tf2::getYaw(last_odom.pose.pose.orientation);
-  std::cout << getCurrentTime() << "delta odom: [dx " << delta_x << ", dy " << delta_y << ", dtheta " << delta_theta << "]" << std::endl;
-  // step2 calculate delte value of estimate pose
-  double delta_estimate_x = current_estimate.vector.x - last_estimate.vector.x;
-  double delta_estimate_y = current_estimate.vector.y - last_estimate.vector.y;
-  double delta_estimate_theta = current_estimate.vector.z - last_estimate.vector.z;
-  std::cout << getCurrentTime() << "delta estimate: [dx " << delta_estimate_x << ", dy " << delta_estimate_y << ", dtheta " << delta_estimate_theta << "]" << std::endl;
-  // step3 calculate delta value
-  double delta_x_error = delta_x - delta_estimate_x;
-  double delta_y_error = delta_y - delta_estimate_y;
-  double delta_theta_error = delta_theta - delta_estimate_theta;
-  double position_error = sqrt(delta_x_error * delta_x_error + delta_y_error * delta_y_error);
-  double orientation_error = fabs(delta_theta_error);
-  std::cout << getCurrentTime() << "p_e: " << position_error << ", o_e: " << orientation_error << std::endl;
-  const double position_error_threshold = 0.1f;
-  const double orientation_error_threshold = 0.174532925f;
-  const int consecutive_threshold = 5;
-  static int consecutive_count = 0;
-  if (position_error > position_error_threshold && orientation_error > orientation_error_threshold) {
-      consecutive_count ++;
-  } else {
-      consecutive_count = 0;
-  }
-  if (consecutive_count >= consecutive_threshold) {
-      status = false;
-      consecutive_count = 0;
-  } else {
-      status = true;
-  }
-  // // step4 calculate PLICP odometry
-  // // calculate delta
-  // double delta_tf_x = tf_x_ - last_tf_x_;
-  // double delta_tf_y = tf_y_ - last_tf_y_;
-  // double delta_tf_theta = tf_theta_ - last_tf_theta_;
-  // RCLCPP_INFO(this->get_logger(), "PLICP: delta[%lf, %lf, %lf]", delta_tf_x, delta_tf_y, delta_tf_theta);
-  // // reset variable
-  // last_tf_x_ = tf_x_;
-  // last_tf_y_ = tf_y_;
-  // last_tf_theta_ = tf_theta_;
-  std::cout << getCurrentTime() << "PLICP dist: " << dist << std::endl;
-}
-
-bool AmclNode::calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf) 
-{
-  std::string target_link = "map";
-  // std::string source_link = "two_d_lidar";
-  std::string source_link = "laser_2d_link";
-  try {
-    tf = tf_buffer_->lookupTransform(target_link, source_link, tf2::TimePointZero);
-    return true;
-  } catch (tf2::TransformException & ex) {
-    std::cerr << getCurrentTime() << "Could not get transform from " << source_link << " to " << target_link << ": " << ex.what() << std::endl;
-    return false;
-  }
-}
-
-void AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan)
+void
+AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan)
 {
   geometry_msgs::msg::PoseStamped odom_to_map;
   try {
@@ -1808,15 +1702,16 @@ void AmclNode::calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserS
     tf2::toMsg(map_to_base_tf.inverse(), map_to_base_tf_stamp.pose);
     tf_buffer_->transform(map_to_base_tf_stamp, odom_to_map, odom_frame_id_);
   } catch(tf2::TransformException & e) {
-    std::cerr << getCurrentTime() << " [ERROR] TransformException: " << e.what() << std::endl;
-    std::cerr << "Failed to transform from " << base_frame_id_ << " to " << odom_frame_id_ << std::endl;
-    std::cerr << "estimate_pose_: [" << estimate_pose_.vector.x << ", " << estimate_pose_.vector.y << ", " << estimate_pose_.vector.z << "]" << std::endl;
+      spdlog::error("TransformException: {}", e.what());
+      spdlog::error("Failed to transform from {} to {}", base_frame_id_, odom_frame_id_);
+      spdlog::error("estimate_pose_: [x: {:.4f}, y: {:.4f}, z: {:.4f}]", estimate_pose_.vector.x, estimate_pose_.vector.y, estimate_pose_.vector.z);
     return;
   }
   tf2::impl::Converter<true, false>::convert(odom_to_map.pose, latest_tf_);
 }
 
-void AmclNode::amclStatusControlSrvCallback(
+void
+AmclNode::amclStatusControlSrvCallback(
     const std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Request> request,
     std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Response> response)
 {
@@ -1824,28 +1719,29 @@ void AmclNode::amclStatusControlSrvCallback(
   geometry_msgs::msg::PoseStamped init_pose = request->init_pose;
 
   // Log the received request
-  std::cout << getCurrentTime() << " [INFO] Received request to change AMCL status. Target status: " 
-            << target_status << ", Initial pose: [x: " << init_pose.pose.position.x
-            << ", y: " << init_pose.pose.position.y << ", yaw: " 
-            << tf2::getYaw(init_pose.pose.orientation) << "]" << std::endl;
+  spdlog::info("Received request to change AMCL status. Target status: {}, Initial pose: [x: {}, y: {}, yaw: {}]", 
+    target_status, 
+    init_pose.pose.position.x, 
+    init_pose.pose.position.y, 
+    tf2::getYaw(init_pose.pose.orientation));
 
   // Update AMCL status
   amcl_status_ = target_status;
-  std::cout << getCurrentTime() << " [INFO] AMCL status changed to: " << amcl_status_ << std::endl;
+  spdlog::info("AMCL status changed to: {}", amcl_status_);
 
   if (amcl_status_) {
     // Validate the initialization pose
     if (init_pose.header.frame_id.empty()) {
-      std::cout << getCurrentTime() << " [ERROR] Frame ID in the request is empty. Please provide a global frame ID." << std::endl;
+      spdlog::error("Frame ID in the request is empty. Please provide a global frame ID.");
       response->result = response->FAIL;
       response->msg = "Frame ID is empty. Please provide a global frame ID.";
       return;
     }
 
     if (init_pose.header.frame_id != global_frame_id_) {
-      std::cout << getCurrentTime() << " [ERROR] Frame ID mismatch. Requested frame ID: " 
-                << init_pose.header.frame_id << " does not match global frame ID: " 
-                << global_frame_id_ << std::endl;
+      spdlog::error("Frame ID mismatch. Requested frame ID: {} does not match global frame ID: {}", 
+        init_pose.header.frame_id, 
+        global_frame_id_);
       response->result = response->FAIL;
       response->msg = "Frame ID mismatch. Please check the frame ID.";
       return;
@@ -1857,7 +1753,7 @@ void AmclNode::amclStatusControlSrvCallback(
 
     if (!active_) {
       init_pose_received_on_inactive = true;
-      std::cout << getCurrentTime() << " [WARN] Initial pose received, but AMCL is not in the active state." << std::endl;
+      spdlog::warn("Initial pose received, but AMCL is not in the active state.");
       response->result = response->FAIL;
       response->msg = "AMCL is not in the active state.";
       return;
@@ -1867,20 +1763,26 @@ void AmclNode::amclStatusControlSrvCallback(
     initial_pose.header = init_pose.header;
     initial_pose.pose.pose = init_pose.pose;
 
-    std::cout << getCurrentTime() << " [INFO] Setting initial pose: [x: " << initial_pose.pose.pose.position.x
-              << ", y: " << initial_pose.pose.pose.position.y
-              << ", yaw: " << tf2::getYaw(initial_pose.pose.pose.orientation) << "]" << std::endl;
+    spdlog::info("Setting initial pose: [x: {}, y: {}, yaw: {}]", 
+      initial_pose.pose.pose.position.x, 
+      initial_pose.pose.pose.position.y, 
+      tf2::getYaw(initial_pose.pose.pose.orientation));
 
     handleInitialPose(initial_pose);
   }
 
-  // Set response
-  response->result = response->SUCCESS;
-  response->msg = "AMCL status changed successfully.";
-  std::cout << getCurrentTime() << " [INFO] response->result: " << "response->SUCCESS" << std::endl;
-  std::cout << getCurrentTime() << " [INFO] response->msg: " << "AMCL status changed successfully." << std::endl;
+  if (amcl_status_) {
+    response->result = response->SUCCESS;
+    response->msg = "AMCL status changed successfully. Already enabled";
+    spdlog::info("response->result: {}", "response->SUCCESS");
+    spdlog::info("response->msg: {}", "AMCL status changed successfully. Already enabled");
+  } else {
+    response->result = response->SUCCESS;
+    response->msg = "AMCL status changed successfully. Already disabled";
+    spdlog::info("response->result: {}", "response->SUCCESS");
+    spdlog::info("response->msg: {}", "AMCL status changed successfully. Already disabled");
+  }
 }
-
 
 }  // namespace nav2_amcl
 

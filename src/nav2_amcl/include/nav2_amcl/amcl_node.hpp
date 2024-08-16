@@ -43,15 +43,12 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include "pluginlib/class_loader.hpp"
-#include "csm/csm.h"
-#include "nav2_amcl/icp/plicp.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "fcbox_msgs/srv/amcl_status_control.hpp"
-#include "nav2_amcl/logger.hpp"
+#include "spdlog/spdlog.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -408,34 +405,20 @@ private:
   void amclStatusControlSrvCallback(
     const std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Request> request,
     std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Response> response);
-  void initTimer();
-  void timer1sCallback();
-
-  void estimete_pose_monitor(bool & status, nav_msgs::msg::Odometry last_odom, nav_msgs::msg::Odometry current_odom,
-    geometry_msgs::msg::Vector3Stamped last_estimate, geometry_msgs::msg::Vector3Stamped current_estimate, double dist);
   void calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan);
-  bool calculateTfLidarToMap(geometry_msgs::msg::TransformStamped & tf);
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
   rclcpp::Service<fcbox_msgs::srv::AmclStatusControl>::SharedPtr amcl_status_control_srv_;
-  rclcpp::TimerBase::SharedPtr timer1s_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_;
 
-  bool timer1s_first_executed_;
-  nav_msgs::msg::Odometry last_odom_;
-  nav_msgs::msg::Odometry current_odom_;
-  geometry_msgs::msg::Vector3Stamped last_estimate_pose_;
-  geometry_msgs::msg::Vector3Stamped estimate_pose_;  //  the current estimate pose, Dynamic updates with scan received
-  bool robot_moved_{false};
-  bool first_set_estimate_pose_{true};
-  PLICP plicp_;
-  geometry_msgs::msg::Vector3 last_pos_;
-  geometry_msgs::msg::Vector3 current_pos_;
-  rclcpp::Time last_movement_time_;
-  geometry_msgs::msg::Twist current_velocity_;
+  geometry_msgs::msg::Vector3Stamped estimate_pose_;
   bool amcl_status_{false};
-  
+  geometry_msgs::msg::Twist current_velocity_;
+  rclcpp::Time last_movement_time_;
+  std::chrono::steady_clock::time_point last_update_time_;
+
+
 };
 
 }  // namespace nav2_amcl
