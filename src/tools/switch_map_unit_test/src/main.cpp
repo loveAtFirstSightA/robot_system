@@ -22,7 +22,12 @@
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<switch_map_unit_test::SwitchMapUnitTest>());
+    auto node = std::make_shared<switch_map_unit_test::SwitchMapUnitTest>();
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
+    
+    // rclcpp::spin(std::make_shared<switch_map_unit_test::SwitchMapUnitTest>());
     rclcpp::shutdown();
     return 0;
 }

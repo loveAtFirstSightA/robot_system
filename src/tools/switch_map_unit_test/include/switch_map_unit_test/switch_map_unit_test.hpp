@@ -18,6 +18,7 @@
 #define SWITCH_MAP_UNIT_TEST__SWITCH_MAP_UNIT_TEST_HPP_
 
 #include "string"
+#include <chrono>
 #include "rclcpp/rclcpp.hpp"
 #include "fcbox_msgs/srv/amcl_status_control.hpp"
 #include "fcbox_msgs/srv/nav_status_control.hpp"
@@ -33,7 +34,7 @@ public:
     ~SwitchMapUnitTest();
 
 private:
-    void timerCallback();
+    // void timerCallback();
     using AmclServiceResponseFuture = rclcpp::Client<fcbox_msgs::srv::AmclStatusControl>::SharedFuture;
     using NavServiceResponseFuture = rclcpp::Client<fcbox_msgs::srv::NavStatusControl>::SharedFuture;
     void enableAmclClientResponseCallback(AmclServiceResponseFuture future);
@@ -43,15 +44,19 @@ private:
     bool isAmclServerAvailable();
     bool isNavServerAvailable();
 
-    rclcpp::Client<fcbox_msgs::srv::AmclStatusControl>::SharedPtr amcl_cli_;
-    rclcpp::Client<fcbox_msgs::srv::NavStatusControl>::SharedPtr nav_cli_;
-    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::Client<fcbox_msgs::srv::AmclStatusControl>::SharedPtr amcl_client_;
+    rclcpp::Client<fcbox_msgs::srv::NavStatusControl>::SharedPtr nav_client_;
+    // rclcpp::TimerBase::SharedPtr timer_;
     unsigned int unit_test_count_;
     std::string a_map_path_;
     std::string b_map_path_;
 
 private:
-    rclcpp::Service<fcbox_msgs::srv::ChangeState>::SharedPtr change_state_ser_;
+    void changeStateServerCallback(
+        const std::shared_ptr<fcbox_msgs::srv::ChangeState::Request> request,
+        std::shared_ptr<fcbox_msgs::srv::ChangeState::Response> response);
+
+    rclcpp::Service<fcbox_msgs::srv::ChangeState>::SharedPtr change_state_server_;
 
     
 };

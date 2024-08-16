@@ -25,6 +25,7 @@ include_directories(
 )
 
 set(executable_name switch_map_unit_test)
+set(executable_client change_state)
 
 set(library_name ${executable_name}_core)
 
@@ -45,6 +46,12 @@ ament_target_dependencies(${executable_name} ${dependencies})
 
 target_link_libraries(${executable_name} ${library_name} fmt::fmt)
 
+add_executable(${executable_client} src/change_state.cpp)
+target_include_directories(${executable_client} PRIVATE include)
+ament_target_dependencies(${executable_client} ${dependencies})
+
+target_link_libraries(${executable_client} ${library_name} fmt::fmt)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -64,6 +71,10 @@ install(TARGETS ${library_name}
 )
 
 install(TARGETS ${executable_name}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS ${executable_client}
   DESTINATION lib/${PROJECT_NAME}
 )
 
