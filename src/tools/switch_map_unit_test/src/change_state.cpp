@@ -26,36 +26,41 @@ class ChangeState : public rclcpp::Node
 public:
     ChangeState() : Node("change_state")
     {
-        change_state_client_ = this->create_client<fcbox_msgs::srv::ChangeState>("change_state");
+        change_state_client_ = this->create_client<fcbox_msgs::srv::ChangeState>("/ChangeRobotState");
         timer_ = this->create_wall_timer(
-            std::chrono::seconds(3),
+            std::chrono::seconds(10),
             std::bind(&ChangeState::timerCallabck, this));
         spdlog::info("Create client to change_state");
-        spdlog::info("Create timer of 3s");
+        spdlog::info("Create timer of 10s");
+        count_ = 0;
+        map_id_1 = 1717573160772;
+        map_id_2 = 1721978946014;
     }
 
 private:
     void timerCallabck()
     {
-        spdlog::info("Timer event");
-        using std::placeholders::_1;
+        std::cout << std::endl;
+        spdlog::info("Timer event: {}", ++count_);
         auto request = std::make_shared<fcbox_msgs::srv::ChangeState::Request>();
         request->target_state = request->NAVIGATION;
         request->pose.position.x = 0.0f;
         request->pose.position.y = 0.0f;
         request->pose.position.z = 0.0f;
-        request->pose.orientation.w = 0.0f;
+        request->pose.orientation.w = 1.0f;
         request->pose.orientation.x = 0.0f;
         request->pose.orientation.y = 0.0f;
         request->pose.orientation.z = 0.0f;
-        spdlog::info(" - Sending request: state {}, pose [x {:.4f}, y {:.4f}, z {:.4f}, w {:.4f}, x {:.4f} y {:.4f}, z {:.4f}]",
+        if (count_ % 2 == 0) {
+            request->map_id = map_id_1;
+        } else {
+            request->map_id = map_id_2;
+        }
+        spdlog::info(" - Sending request: state {}, pose [x {:.4f}, y {:.4f}, z {:.4f}, w {:.4f}, x {:.4f} y {:.4f}, z {:.4f}], map_id: {}",
             request->target_state, request->pose.position.x, request->pose.position.y, request->pose.position.z, request->pose.orientation.w, 
-            request->pose.orientation.x, request->pose.orientation.y, request->pose.orientation.z);
+            request->pose.orientation.x, request->pose.orientation.y, request->pose.orientation.z, request->map_id);
         change_state_client_->async_send_request(
-            request, std::bind(&ChangeState::changeStateClientCallback, this, _1));
-        
-        // debug
-        timer_->cancel();
+            request, std::bind(&ChangeState::changeStateClientCallback, this, std::placeholders::_1));
     }
     using ServiceResponseFuture = rclcpp::Client<fcbox_msgs::srv::ChangeState>::SharedFuture;
     void changeStateClientCallback(ServiceResponseFuture future)
@@ -66,6 +71,9 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Client<fcbox_msgs::srv::ChangeState>::SharedPtr change_state_client_;
+    int count_;
+    uint64_t map_id_1;
+    uint64_t map_id_2;
 };
 
 } // namespace switch_map_unit_test
