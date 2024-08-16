@@ -17,6 +17,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(fcbox_msgs REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
 
 include_directories(
   include
@@ -29,6 +31,8 @@ set(library_name ${executable_name}_core)
 set(dependencies
   rclcpp
   fcbox_msgs
+  spdlog
+  fmt
 )
 
 add_library(${library_name} src/switch_map_unit_test.cpp)
@@ -39,7 +43,7 @@ add_executable(${executable_name} src/main.cpp)
 target_include_directories(${executable_name} PRIVATE include)
 ament_target_dependencies(${executable_name} ${dependencies})
 
-target_link_libraries(${executable_name} ${library_name})
+target_link_libraries(${executable_name} ${library_name} fmt::fmt)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

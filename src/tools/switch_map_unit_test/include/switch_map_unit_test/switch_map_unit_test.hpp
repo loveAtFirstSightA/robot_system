@@ -19,9 +19,10 @@
 
 #include "string"
 #include "rclcpp/rclcpp.hpp"
-#include "switch_map_unit_test/logger.hpp"
 #include "fcbox_msgs/srv/amcl_status_control.hpp"
 #include "fcbox_msgs/srv/nav_status_control.hpp"
+#include "spdlog/spdlog.h"
+#include "fcbox_msgs/srv/change_state.hpp"
 
 namespace switch_map_unit_test
 {
@@ -48,6 +49,9 @@ private:
     unsigned int unit_test_count_;
     std::string a_map_path_;
     std::string b_map_path_;
+
+private:
+    rclcpp::Service<fcbox_msgs::srv::ChangeState>::SharedPtr change_state_ser_;
 
     
 };
