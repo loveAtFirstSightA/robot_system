@@ -33,8 +33,8 @@ public:
         spdlog::info("Create client to change_state");
         spdlog::info("Create timer of 10s");
         count_ = 0;
-        map_id_1 = 1717573160772;
-        map_id_2 = 1721978946014;
+        map_id_1 = 1711768927165;
+        map_id_2 = 1709877929284;
     }
 
 private:

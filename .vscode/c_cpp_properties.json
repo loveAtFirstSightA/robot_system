@@ -8,8 +8,8 @@
             "includePath": [
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/install/**",
-                "/opt/ros/humble/include/**"
-                // "/usr/include/**",
+                "/opt/ros/humble/include/**",
+                "/usr/include/**"
                 // "${workspaceFolder}/install/algorithm_msgs/include/algorithm_msgs/",
                 // "${workspaceFolder}/src/nav2_amcl/include/",
                 // "${workspaceFolder}/src/library/csm/include"
