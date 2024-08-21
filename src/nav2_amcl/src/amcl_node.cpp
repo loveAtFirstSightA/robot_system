@@ -1675,8 +1675,88 @@ AmclNode::initLaserScan()
 
 void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  // TODO
-  auto m = msg;
+  static double last_odom_x, last_odom_y, last_odom_yaw;
+  static double last_estimate_x, last_estimate_y, last_estimate_yaw;
+  if (!amcl_status_) {
+    last_odom_x = 0.0f;
+    last_odom_y = 0.0f;
+    last_odom_yaw = 0.0f;
+    last_estimate_x = 0.0f;
+    last_estimate_y = 0.0f;
+    last_estimate_yaw = 0.0f;
+    return;
+  }
+  
+  static bool initialization = true;
+  if (initialization) {
+    last_odom_x = msg->pose.pose.position.x;
+    last_odom_y = msg->pose.pose.position.y;
+    last_odom_yaw = tf2::getYaw(msg->pose.pose.orientation);
+    last_estimate_x = estimate_pose_.vector.x;
+    last_estimate_y = estimate_pose_.vector.y;
+    last_estimate_yaw = estimate_pose_.vector.z;
+    initialization = false;
+    spdlog::info("Initialization: last_odom_x = {:.4f}, last_odom_y = {:.4f}, last_odom_yaw = {:.4f}, last_estimate_x = {:.4f}, last_estimate_y = {:.4f}, last_estimate_yaw = {:.4f}", 
+      last_odom_x, last_odom_y, last_odom_yaw, last_estimate_x, last_estimate_y, last_estimate_yaw);
+    return;
+  }
+  double current_odom_x = msg->pose.pose.position.x;
+  double current_odom_y = msg->pose.pose.position.y;
+  double current_odom_yaw = tf2::getYaw(msg->pose.pose.orientation);
+  double current_estimate_x = estimate_pose_.vector.x;
+  double current_estimate_y = estimate_pose_.vector.y;
+  double current_estimate_yaw = estimate_pose_.vector.z;
+
+  const double distance_threshold = 0.1f;
+  const double angle_threshold = 30.0f / 180.0f * M_PI;
+  const double exception_dist_threshold = distance_threshold;
+  const double exception_angle_threshold = angle_threshold;
+  static int error_count = 0;
+  const int error_count_threshold = 10;
+  double delta_odom_x = fabs(current_odom_x - last_odom_x);
+  double delta_odom_y = fabs(current_odom_y - last_odom_y);
+  double delta_odom_dist = std::sqrt(delta_odom_x * delta_odom_x + delta_odom_y * delta_odom_y);
+  double delta_odom_yaw = fabs(current_odom_yaw - last_odom_yaw);
+
+  bool contrast = delta_odom_dist > distance_threshold || delta_odom_yaw > angle_threshold;
+  if (contrast) {
+    double delta_estimate_x = fabs(current_estimate_x - last_estimate_x);
+    double delta_estimate_y = fabs(current_estimate_y - last_estimate_y);
+    double delta_estiamte_dist = std::sqrt(delta_estimate_x * delta_estimate_x + delta_estimate_y * delta_estimate_y);
+    double delta_estimate_yaw = fabs(current_estimate_yaw - last_estimate_yaw);
+    double error_dist = fabs(delta_estiamte_dist - delta_odom_dist);
+    double error_yaw = fabs(delta_estimate_yaw - delta_odom_yaw);
+
+    if (error_dist > exception_dist_threshold || error_yaw > exception_angle_threshold) {
+      error_count ++;
+      spdlog::info("Last value: odom[x {:.4f}, y {:.4f}, yaw {:.4f} estimate [x {:.4f}, y {:.4f}, yaw {:.4f}]",
+        last_odom_x, last_odom_y, last_odom_yaw, last_estimate_x, last_estimate_y, last_estimate_yaw);
+      spdlog::info("Current value: odom[x {:.4f}, y {:.4f}, yaw {:.4f} estimate [x {:.4f}, y {:.4f}, yaw {:.4f}]",
+        current_odom_x, current_odom_y, current_odom_yaw, current_estimate_x, current_estimate_y, current_estimate_yaw);
+      spdlog::info("Error values: error_dist = {:.4f}, error_yaw = {:.4f}", error_dist, error_yaw);
+      spdlog::info("error_count: {}", error_count);
+    } else {
+      error_count = 0;
+    }
+
+    if (error_count > error_count_threshold) {
+      auto msg = std_msgs::msg::Bool();
+      msg.data = false;
+      spdlog::error("Publishing message estimate status: {}", msg.data);
+      estimate_pose_status_pub_->publish(msg);
+    } else {
+      auto msg = std_msgs::msg::Bool();
+      msg.data = true;
+      spdlog::info("Publishing message estimate status: {}", msg.data);
+      estimate_pose_status_pub_->publish(msg);
+    }
+    last_odom_x = current_odom_x;
+    last_odom_y = current_odom_y;
+    last_odom_yaw = current_odom_yaw;
+    last_estimate_x = current_estimate_x;
+    last_estimate_y = current_estimate_y;
+    last_estimate_yaw = current_estimate_yaw;
+  }
 }
 
 void
@@ -1719,11 +1799,8 @@ AmclNode::amclStatusControlSrvCallback(
   geometry_msgs::msg::PoseStamped init_pose = request->init_pose;
 
   // Log the received request
-  spdlog::info("Received request to change AMCL status. Target status: {}, Initial pose: [x: {}, y: {}, yaw: {}]", 
-    target_status, 
-    init_pose.pose.position.x, 
-    init_pose.pose.position.y, 
-    tf2::getYaw(init_pose.pose.orientation));
+  spdlog::info("Received request to change AMCL status. Target status: {}, Initial pose: [x: {:.4f}, y: {:.4f}, yaw: {:.4f}]", 
+    target_status, init_pose.pose.position.x, init_pose.pose.position.y, tf2::getYaw(init_pose.pose.orientation));
 
   // Update AMCL status
   amcl_status_ = target_status;
@@ -1763,10 +1840,8 @@ AmclNode::amclStatusControlSrvCallback(
     initial_pose.header = init_pose.header;
     initial_pose.pose.pose = init_pose.pose;
 
-    spdlog::info("Setting initial pose: [x: {}, y: {}, yaw: {}]", 
-      initial_pose.pose.pose.position.x, 
-      initial_pose.pose.pose.position.y, 
-      tf2::getYaw(initial_pose.pose.pose.orientation));
+    spdlog::info("Setting initial pose: [x: {:.4f}, y: {:.4f}, yaw: {:.4f}]", 
+      initial_pose.pose.pose.position.x, initial_pose.pose.pose.position.y, tf2::getYaw(initial_pose.pose.pose.orientation));
 
     handleInitialPose(initial_pose);
   }
