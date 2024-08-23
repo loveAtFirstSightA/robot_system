@@ -1,26 +1,63 @@
 {
-    "configurations": [
-        {
-            "browse": {
-                "databaseFilename": "${default}",
-                "limitSymbolsToIncludedHeaders": false
-            },
-            "includePath": [
-                "${workspaceFolder}/src/**",
-                "${workspaceFolder}/install/**",
-                "/opt/ros/humble/include/**",
-                "/usr/include/**"
-                // "${workspaceFolder}/install/algorithm_msgs/include/algorithm_msgs/",
-                // "${workspaceFolder}/src/nav2_amcl/include/",
-                // "${workspaceFolder}/src/library/csm/include"
-                // "${workspaceFolder}/build/fcbox_msgs/include/fcbox_msgs/**",
-            ],
-            "name": "ROS",
-            "intelliSenseMode": "gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu99",
-            "cppStandard": "c++17"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/lio/Project_repository/robot_system/install/switch_map_unit_test/include/**",
+        "/home/lio/Project_repository/robot_system/install/stanley_controller/include/**",
+        "/home/lio/Project_repository/robot_system/install/spdlog_demo/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_teleop/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_plicp_odom/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_pl_icp/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_msgs/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_laser_scan/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_iterative_closest_point/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_feature_detection/include/**",
+        "/home/lio/Project_repository/robot_system/install/robot_conver_pcl/include/**",
+        "/home/lio/Project_repository/robot_system/install/pure_pursuit/include/**",
+        "/home/lio/Project_repository/robot_system/install/path_tool/include/**",
+        "/home/lio/Project_repository/robot_system/install/particle_filter/include/**",
+        "/home/lio/Project_repository/robot_system/install/odometry_covariance/include/**",
+        "/home/lio/Project_repository/robot_system/install/nav2_amcl/include/**",
+        "/home/lio/Project_repository/robot_system/install/model_predict_control/include/**",
+        "/home/lio/Project_repository/robot_system/install/iterative_closest_point/include/**",
+        "/home/lio/Project_repository/robot_system/install/fcbox_msgs/include/**",
+        "/home/lio/Project_repository/robot_system/install/data_recorder/include/**",
+        "/home/lio/Project_repository/robot_system/install/csm/include/**",
+        "/home/lio/Project_repository/robot_system/install/algorithm_msgs/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/lio/Project_repository/robot_system/src/HB/fcbox_msgs/fcbox_msgs_test/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/Localization/particle_filter/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/Path/path_tool/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/PathTracking/model_predict_control/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/PathTracking/pure_pursuit/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/PathTracking/stanley_controller/include/**",
+        "/home/lio/Project_repository/robot_system/src/algorithm/SLAM/iterative_closest_point/include/**",
+        "/home/lio/Project_repository/robot_system/src/demo_unit/odometry_covariance/include/**",
+        "/home/lio/Project_repository/robot_system/src/demo_unit/spdlog_demo/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_conver_pcl/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_feature_detection/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_iterative_closest_point/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_laser_scan/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_pl_icp/include/**",
+        "/home/lio/Project_repository/robot_system/src/laser/robot_plicp_odom/include/**",
+        "/home/lio/Project_repository/robot_system/src/library/csm/include/**",
+        "/home/lio/Project_repository/robot_system/src/library/ros2_laser_scan_matcher/include/**",
+        "/home/lio/Project_repository/robot_system/src/nav2_amcl/include/**",
+        "/home/lio/Project_repository/robot_system/src/tools/data_recorder/include/**",
+        "/home/lio/Project_repository/robot_system/src/tools/robot_teleop/include/**",
+        "/home/lio/Project_repository/robot_system/src/tools/switch_map_unit_test/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
 }

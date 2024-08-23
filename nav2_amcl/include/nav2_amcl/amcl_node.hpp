@@ -49,6 +49,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "fcbox_msgs/srv/amcl_status_control.hpp"
 #include "spdlog/spdlog.h"
+#include "fcbox_msgs/msg/robot_exception.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -406,18 +407,20 @@ private:
     const std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Request> request,
     std::shared_ptr<fcbox_msgs::srv::AmclStatusControl::Response> response);
   void calculateMaptoOdomTransformWithImu(const sensor_msgs::msg::LaserScan::ConstSharedPtr & laser_scan);
+  void botExceptionSubCallback(const fcbox_msgs::msg::RobotException::SharedPtr msg);
 
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
   rclcpp::Service<fcbox_msgs::srv::AmclStatusControl>::SharedPtr amcl_status_control_srv_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr estimate_pose_status_pub_;
+  rclcpp::Subscription<fcbox_msgs::msg::RobotException>::SharedPtr bot_exception_sub_;
 
   geometry_msgs::msg::Vector3Stamped estimate_pose_;
   bool amcl_status_{false};
   geometry_msgs::msg::Twist current_velocity_;
   rclcpp::Time last_movement_time_;
   std::chrono::steady_clock::time_point last_update_time_;
-
+  bool bot_emergency_{false};
 
 };
 

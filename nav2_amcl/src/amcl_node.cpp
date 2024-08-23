@@ -1586,6 +1586,11 @@ AmclNode::initPubSub()
     "cmd_vel",
     1,
     std::bind(&AmclNode::velSubCallback, this, std::placeholders::_1));
+  
+  bot_exception_sub_ = this->create_subscription<fcbox_msgs::msg::RobotException>(
+    "/robot_exception",
+    rclcpp::QoS(rclcpp::KeepLast(5)).reliable(),
+    std::bind(&AmclNode::botExceptionSubCallback, this, std::placeholders::_1));
 
   spdlog::info("Subscribed to map topic.");
 }
@@ -1677,6 +1682,7 @@ void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   static double last_odom_x, last_odom_y, last_odom_yaw;
   static double last_estimate_x, last_estimate_y, last_estimate_yaw;
+  static bool initialization = true;
   if (!amcl_status_) {
     last_odom_x = 0.0f;
     last_odom_y = 0.0f;
@@ -1686,8 +1692,18 @@ void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
     last_estimate_yaw = 0.0f;
     return;
   }
+
+  if (bot_emergency_) {
+    last_odom_x = 0.0f;
+    last_odom_y = 0.0f;
+    last_odom_yaw = 0.0f;
+    last_estimate_x = 0.0f;
+    last_estimate_y = 0.0f;
+    last_estimate_yaw = 0.0f;
+    initialization = true;
+    return;
+  }
   
-  static bool initialization = true;
   if (initialization) {
     last_odom_x = msg->pose.pose.position.x;
     last_odom_y = msg->pose.pose.position.y;
@@ -1726,6 +1742,7 @@ void AmclNode::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
     double delta_estimate_yaw = fabs(current_estimate_yaw - last_estimate_yaw);
     double error_dist = fabs(delta_estiamte_dist - delta_odom_dist);
     double error_yaw = fabs(delta_estimate_yaw - delta_odom_yaw);
+    error_yaw = angleutils::normalize(error_yaw);
 
     if (error_dist > exception_dist_threshold || error_yaw > exception_angle_threshold) {
       error_count ++;
@@ -1856,6 +1873,21 @@ AmclNode::amclStatusControlSrvCallback(
     response->msg = "AMCL status changed successfully. Already disabled";
     spdlog::info("response->result: {}", "response->SUCCESS");
     spdlog::info("response->msg: {}", "AMCL status changed successfully. Already disabled");
+  }
+}
+
+void
+AmclNode::botExceptionSubCallback(const fcbox_msgs::msg::RobotException::SharedPtr msg)
+{
+  if (msg->exception_name == msg->CHASSIS_DRIVER_COMMUNICATION_FAILURE && msg->type_wait_for_resolve == msg->TYPE_WAITING_RESOLVE) {
+    // emergency status == on
+    bot_emergency_ = true;
+    spdlog::warn("emergency status == on");
+  }
+  if (msg->exception_name == msg->CHASSIS_DRIVER_COMMUNICATION_FAILURE && msg->type_wait_for_resolve == msg->TYPE_RESOLVED) {
+    // emergency status == off
+    bot_emergency_ = false;
+    spdlog::info("emergency status == off");
   }
 }
 
