@@ -17,6 +17,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(spdlog REQUIRED)
 
 include_directories(
   include
@@ -39,7 +40,7 @@ add_executable(${executable_name} src/main.cpp)
 target_include_directories(${executable_name} PRIVATE include)
 ament_target_dependencies(${executable_name} ${dependencies})
 
-target_link_libraries(${executable_name} ${library_name})
+target_link_libraries(${executable_name} ${library_name} spdlog::spdlog)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -19,6 +19,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "spdlog/spdlog.h"
 
 namespace odometry_covariance
 {

@@ -15,7 +15,6 @@
  */
 
 #include "odometry_covariance/odometry_covariance.hpp"
-#include "odometry_covariance/logger.hpp"
 
 namespace odometry_covariance
 {
@@ -34,41 +33,50 @@ void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPt
 {
     odom_ = *msg;
 
-    std::cout << getCurrentTime() << " odom - frame_id: " << odom_.header.frame_id.c_str()
-              << ", child_frame_id: " << odom_.child_frame_id.c_str()
-              << ", position - x: " << odom_.pose.pose.position.x
-              << ", y: " << odom_.pose.pose.position.y
-              << ", z: " << odom_.pose.pose.position.z
-              << ", orientation - x: " << odom_.pose.pose.orientation.x
-              << ", y: " << odom_.pose.pose.orientation.y
-              << ", z: " << odom_.pose.pose.orientation.z
-              << ", w: " << odom_.pose.pose.orientation.w
-              << ", linear velocity - x: " << odom_.twist.twist.linear.x
-              << ", y: " << odom_.twist.twist.linear.y
-              << ", z: " << odom_.twist.twist.linear.z
-              << ", angular velocity - x: " << odom_.twist.twist.angular.x
-              << ", y: " << odom_.twist.twist.angular.y
-              << ", z: " << odom_.twist.twist.angular.z
-              << std::endl;
+    // Log odometry information
+    spdlog::info("odom - frame_id: {}, child_frame_id: {}, position - x: {:.4f}, y: {:.4f}, z: {:.4f}, "
+        "orientation - x: {:.4f}, y: {:.4f}, z: {:.4f}, w: {:.4f}, "
+        "linear velocity - x: {:.4f}, y: {:.4f}, z: {:.4f}, "
+        "angular velocity - x: {:.4f}, y: {:.4f}, z: {:.4f}",
+        odom_.header.frame_id,
+        odom_.child_frame_id,
+        odom_.pose.pose.position.x,
+        odom_.pose.pose.position.y,
+        odom_.pose.pose.position.z,
+        odom_.pose.pose.orientation.x,
+        odom_.pose.pose.orientation.y,
+        odom_.pose.pose.orientation.z,
+        odom_.pose.pose.orientation.w,
+        odom_.twist.twist.linear.x,
+        odom_.twist.twist.linear.y,
+        odom_.twist.twist.linear.z,
+        odom_.twist.twist.angular.x,
+        odom_.twist.twist.angular.y,
+        odom_.twist.twist.angular.z);
 
-    std::cout << "pose covariance: [";
+    // Log pose covariance
+    std::ostringstream pose_cov;
+    pose_cov << "pose covariance: [";
     for (size_t i = 0; i < 36; ++i) {
-        std::cout << odom_.pose.covariance[i];
+        pose_cov << odom_.pose.covariance[i];
         if (i < 35) {
-            std::cout << ", ";
+            pose_cov << ", ";
         }
     }
-    std::cout << "]" << std::endl;
+    pose_cov << "]";
+    spdlog::info("{}", pose_cov.str());
 
-    std::cout << "twist covariance: [";
+    // Log twist covariance
+    std::ostringstream twist_cov;
+    twist_cov << "twist covariance: [";
     for (size_t i = 0; i < 36; ++i) {
-        std::cout << odom_.twist.covariance[i];
+        twist_cov << odom_.twist.covariance[i];
         if (i < 35) {
-            std::cout << ", ";
+            twist_cov << ", ";
         }
     }
-    std::cout << "]" << std::endl;
-    std::cout << std::endl;
+    twist_cov << "]";
+    spdlog::info("{}", twist_cov.str());
 }
 
 /*
