@@ -10,10 +10,8 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    map_yaml_path_arg = DeclareLaunchArgument(
-        'map_yaml_path',
-        # default_value='/home/lio/robot_system/maps/turtlebot3_world.yaml',
-        default_value='/home/lio/robot_system/maps/factory.yaml',
+    map_yaml_path_arg = DeclareLaunchArgument('map_yaml_path',
+        default_value='/home/lio/project_repository/robot_system/maps/factory.yaml',
         description='Full path to map yaml file to load'
     )
     map_yaml_path = LaunchConfiguration('map_yaml_path')
