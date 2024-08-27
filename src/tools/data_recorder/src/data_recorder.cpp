@@ -85,6 +85,7 @@ void DataRecorder::timer_callback()
         tf_pose_.z = tf2::getYaw(tf.transform.rotation);
     } catch(const std::exception& e) {
         // std::cerr << getCurrentTime() << " - " << e.what() << std::endl;
+        RCLCPP_INFO(this->get_logger(), "Not TF transform");
     }
 }
 
