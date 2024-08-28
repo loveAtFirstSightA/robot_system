@@ -85,7 +85,7 @@ void SwitchMapUnitTest::enableAmclClientResponseCallback(AmclServiceResponseFutu
      // enable nav
      auto request = std::make_shared<fcbox_msgs::srv::NavStatusControl::Request>();
      request->target_status = true;
-     // TODO
+     // TODO: define the map path befor executing
      if (unit_test_count_ % 2 == 0) {
           request->map_path = a_map_path_;
      } else {

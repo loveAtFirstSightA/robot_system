@@ -65,8 +65,16 @@ private:
     using ServiceResponseFuture = rclcpp::Client<fcbox_msgs::srv::ChangeState>::SharedFuture;
     void changeStateClientCallback(ServiceResponseFuture future)
     {
-        auto response = future.get();
-        spdlog::info(" - Received response: result {}, msg {}", response->result, response->message);
+        try {
+            auto response = future.get();
+            if (response) {
+                spdlog::info(" - Received response: result {}, msg {}", response->result, response->message);
+            } else {
+                spdlog::warn(" - Received null response");
+            }
+        } catch (const std::exception &e) {
+            spdlog::error(" - Exception caught while getting response: {}", e.what());
+        }
     }
 
     rclcpp::TimerBase::SharedPtr timer_;
