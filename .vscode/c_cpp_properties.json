@@ -28,6 +28,7 @@
         "/home/lio/project_repository/robot_system/install/data_recorder/include/**",
         "/home/lio/project_repository/robot_system/install/csm/include/**",
         "/home/lio/project_repository/robot_system/install/algorithm_msgs/include/**",
+        "/home/lio/project_repository/turtlebot3_robot/install/nav2_amcl/include/**",
         "/opt/ros/humble/include/**",
         "/home/lio/project_repository/robot_system/src/HB/fcbox_msgs/fcbox_msgs_test/include/**",
         "/home/lio/project_repository/robot_system/src/algorithm/Localization/particle_filter/include/**",
