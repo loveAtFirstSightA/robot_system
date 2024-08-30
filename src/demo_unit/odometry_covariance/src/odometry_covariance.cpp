@@ -31,6 +31,7 @@ OdometryCovariance::~OdometryCovariance() {}
 
 void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
+    // Store odometry information
     odom_ = *msg;
     // Log odometry information
     spdlog::info("odom - frame_id: {}, child_frame_id: {}, position - x: {:.4f}, y: {:.4f}, z: {:.4f}, "
