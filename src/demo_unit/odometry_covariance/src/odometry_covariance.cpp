@@ -20,11 +20,11 @@ namespace odometry_covariance
 {
 OdometryCovariance::OdometryCovariance() : Node("odometry_covariance")
 {
-     odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-          // "odom_data",
-          "odom",
-          10,
-          std::bind(&OdometryCovariance::odomSubCallback, this, std::placeholders::_1));
+    odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+        // "odom_data",
+        "odom",
+        10,
+        std::bind(&OdometryCovariance::odomSubCallback, this, std::placeholders::_1));
 }
 
 OdometryCovariance::~OdometryCovariance() {}
@@ -32,7 +32,6 @@ OdometryCovariance::~OdometryCovariance() {}
 void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
     odom_ = *msg;
-
     // Log odometry information
     spdlog::info("odom - frame_id: {}, child_frame_id: {}, position - x: {:.4f}, y: {:.4f}, z: {:.4f}, "
         "orientation - x: {:.4f}, y: {:.4f}, z: {:.4f}, w: {:.4f}, "
@@ -85,9 +84,5 @@ gazebo仿真环境下里程计的信息
 pose covariance: [1e-05, 0, 0, 0, 0, 0, 0, 1e-05, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 0.001]
 twist covariance: [1e-05, 0, 0, 0, 0, 0, 0, 1e-05, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 1e+12, 0, 0, 0, 0, 0, 0, 0.001]
 */
-
-
-
-
 
 }  // namespace odometry_covariance
