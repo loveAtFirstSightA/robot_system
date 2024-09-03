@@ -1,0 +1,52 @@
+{
+	"mapId" : 1721902419607,
+	"mapName" : "MAP_19floor_1721902305",
+	"stations" : 
+	[
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1721902640928,
+			"stationName" : "19floor_elevator_wait",
+			"stationPos" : "wait",
+			"x" : "-8.77920",
+			"y" : "-10.58420",
+			"yaw" : "-3.03721"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1721902490374,
+			"stationName" : "19floor_elevator_middle",
+			"stationPos" : "middle",
+			"x" : "-10.70047",
+			"y" : "-11.30446",
+			"yaw" : "3.05117"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1721902503760,
+			"stationName" : "19floor_elevator_center",
+			"stationPos" : "center",
+			"x" : "-11.83332",
+			"y" : "-11.27998",
+			"yaw" : "3.09543"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1721902511571,
+			"stationName" : "19floor_elevator_inside",
+			"stationPos" : "inside",
+			"x" : "-12.16010",
+			"y" : "-11.26263",
+			"yaw" : "3.10946"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1721902527545,
+			"stationName" : "19floor_elevator_outside",
+			"stationPos" : "outside",
+			"x" : "-9.22161",
+			"y" : "-11.38962",
+			"yaw" : "3.09850"
+		}
+	]
+}

@@ -1,0 +1,29 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1721118128058,
+	"mapName" : "MAP_16floor_1721118309",
+	"msgId" : 174245138,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "",
+				"isWork" : 0,
+				"mapId" : 1721118128058,
+				"mapName" : "MAP_16floor_1721118309",
+				"stationId" : 1721119001194,
+				"stationName" : "16floor_firedoor1",
+				"stationType" : 0,
+				"x" : -1.46001,
+				"y" : 2.5413299999999999,
+				"yaw" : -1.5643100000000001
+			}
+		]
+	},
+	"taskId" : 173944559,
+	"taskName" : "16floor_firedoor1",
+	"taskType" : 0
+}

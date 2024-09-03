@@ -1,0 +1,23 @@
+{
+	"mapId" : 1721902419607,
+	"mapName" : "MAP_19floor_1721902305",
+	"stations" : 
+	[
+		{
+			"deviceId" : "100133030000001",
+			"stationId" : 1721985649460,
+			"stationName" : "19floor_firedoor1",
+			"x" : "-7.76855",
+			"y" : "-13.77504",
+			"yaw" : "1.61605"
+		},
+		{
+			"deviceId" : "100133030000001",
+			"stationId" : 1721985690303,
+			"stationName" : "19floor_firedoor2",
+			"x" : "-7.86869",
+			"y" : "-11.81121",
+			"yaw" : "1.52471"
+		}
+	]
+}

@@ -1,0 +1,29 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1721902419607,
+	"mapName" : "MAP_19floor_1721902305",
+	"msgId" : 163639183,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "",
+				"isWork" : 0,
+				"mapId" : 1721902419607,
+				"mapName" : "MAP_19floor_1721902305",
+				"stationId" : 1721902503760,
+				"stationName" : "19floor_elevator_center",
+				"stationType" : 2,
+				"x" : -11.833320000000001,
+				"y" : -11.27998,
+				"yaw" : 3.0954299999999999
+			}
+		]
+	},
+	"taskId" : 163221463,
+	"taskName" : "19floor_elevator_center",
+	"taskType" : 0
+}

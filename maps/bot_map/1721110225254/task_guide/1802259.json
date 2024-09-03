@@ -1,0 +1,29 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1721110225254,
+	"mapName" : "MAP_20floor_1721110405",
+	"msgId" : 180355447,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "31633",
+				"isWork" : 0,
+				"mapId" : 1721110225254,
+				"mapName" : "MAP_20floor_1721110405",
+				"stationId" : 1721110575682,
+				"stationName" : "20floor_CEO\u95e8\u53e3",
+				"stationType" : 0,
+				"x" : -18.881830000000001,
+				"y" : 16.780169999999998,
+				"yaw" : 0.00562
+			}
+		]
+	},
+	"taskId" : 1802259,
+	"taskName" : "20floor_CEO\u95e8\u53e3",
+	"taskType" : 0
+}

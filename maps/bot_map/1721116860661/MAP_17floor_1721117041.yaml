@@ -1,0 +1,10 @@
+image: /home/lio/hivebox_ws/Usr/bot_map/1721116860661/MAP_17floor_1721117041.pgm
+resolution: 0.050000
+origin: [-38.958530, -28.174454, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+map_name: MAP_17floor_1721117041
+area: reserve
+building: 2栋
+floor: 17

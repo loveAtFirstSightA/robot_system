@@ -1,0 +1,28 @@
+{
+	"mapId" : 1721116860661,
+	"mapName" : "MAP_17floor_1721117041",
+	"stations" : 
+	[
+		{
+			"stationId" : 1721117122866,
+			"stationName" : "17floor_\u4f1a\u8bae\u5ba4\u56db",
+			"x" : "-5.98027",
+			"y" : "3.89726",
+			"yaw" : "0.01549"
+		},
+		{
+			"stationId" : 1721117249208,
+			"stationName" : "17floor_\u6253\u5370\u673a\u65c1\u8fb9",
+			"x" : "-1.30980",
+			"y" : "-15.68293",
+			"yaw" : "-2.99651"
+		},
+		{
+			"stationId" : 1722412560604,
+			"stationName" : "17floor_\u7535\u8bdd\u95f4",
+			"x" : "5.08110",
+			"y" : "-15.63790",
+			"yaw" : "-3.07058"
+		}
+	]
+}

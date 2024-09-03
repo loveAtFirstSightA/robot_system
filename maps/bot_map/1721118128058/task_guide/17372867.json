@@ -1,0 +1,28 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "ctrl_for_recharge",
+	"cmdTime" : 1722331836886,
+	"mapId" : 1721118128058,
+	"mapName" : null,
+	"msgId" : 100001,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"deviceId" : "100133040000007",
+				"extra" : "",
+				"isWork" : 0,
+				"stationId" : 1722331707585,
+				"stationName" : "xxx",
+				"stationType" : 0,
+				"x" : 6.8349574208259583,
+				"y" : -2.4994893632829189,
+				"yaw" : 0.014670000411570072
+			}
+		]
+	},
+	"taskId" : 17372867,
+	"taskName" : "xxx",
+	"taskType" : 0
+}

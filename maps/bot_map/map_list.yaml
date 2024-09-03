@@ -1,0 +1,77 @@
+-
+  map_id: 1721118128058
+  map_name: MAP_16floor_1721118309
+  map_building: 2栋
+  map_floor: 16
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721118128058/MAP_16floor_1721118309.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721118128058/MAP_16floor_1721118309.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721118128058/MAP_16floor_1721118309.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721118128058/MAP_16floor_1721118309.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1721115427108
+  map_name: MAP_18floor_1721115607
+  map_building: 2栋
+  map_floor: 18
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721115427108/MAP_18floor_1721115607.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721115427108/MAP_18floor_1721115607.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721115427108/MAP_18floor_1721115607.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721115427108/MAP_18floor_1721115607.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1721902419607
+  map_name: MAP_19floor_1721902305
+  map_building: 2栋
+  map_floor: 19
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721902419607/MAP_19floor_1721902305.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721902419607/MAP_19floor_1721902305.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721902419607/MAP_19floor_1721902305.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721902419607/MAP_19floor_1721902305.pbstream
+  config_path: null
+  active: 1
+-
+  map_id: 1721110225254
+  map_name: MAP_20floor_1721110405
+  map_building: 2栋
+  map_floor: 20
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721110225254/MAP_20floor_1721110405.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721110225254/MAP_20floor_1721110405.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721110225254/MAP_20floor_1721110405.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721110225254/MAP_20floor_1721110405.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1721978946014
+  map_name: MAP_21floor_1721978829
+  map_building: 2栋
+  map_floor: 21
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721978946014/MAP_21floor_1721978829.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721978946014/MAP_21floor_1721978829.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721978946014/MAP_21floor_1721978829.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721978946014/MAP_21floor_1721978829.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1717573160772
+  map_name: MAP_-1A楼地图_1717573160
+  map_building: 2栋
+  map_floor: -1A
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1717573160772/MAP_-1A楼地图_1717573160.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1717573160772/MAP_-1A楼地图_1717573160.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1717573160772/MAP_-1A楼地图_1717573160.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1717573160772/MAP_-1A楼地图_1717573160.pbstream
+  config_path: null
+  active: 0
+-
+  map_id: 1721116860661
+  map_name: MAP_17floor_1721117041
+  map_building: 2栋
+  map_floor: 17
+  png_path: /home/lio/hivebox_ws/Usr/bot_map/1721116860661/MAP_17floor_1721117041.png
+  pgm_path: /home/lio/hivebox_ws/Usr/bot_map/1721116860661/MAP_17floor_1721117041.pgm
+  yaml_path: /home/lio/hivebox_ws/Usr/bot_map/1721116860661/MAP_17floor_1721117041.yaml
+  pbstream_path: /home/lio/hivebox_ws/Usr/bot_map/1721116860661/MAP_17floor_1721117041.pbstream
+  config_path: null
+  active: 0

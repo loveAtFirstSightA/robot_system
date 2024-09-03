@@ -1,0 +1,52 @@
+{
+	"mapId" : 1717573160772,
+	"mapName" : "MAP_-1A\u697c\u5730\u56fe_1717573160",
+	"stations" : 
+	[
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1717573986417,
+			"stationName" : "-1A_wait",
+			"stationPos" : "wait",
+			"x" : "9.20287",
+			"y" : "-27.15348",
+			"yaw" : "-1.75184"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1717574010645,
+			"stationName" : "-1A_outside",
+			"stationPos" : "outside",
+			"x" : "9.00888",
+			"y" : "-28.31796",
+			"yaw" : "-1.69262"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1717574939547,
+			"stationName" : "-1A_center",
+			"stationPos" : "center",
+			"x" : "8.74798",
+			"y" : "-30.78179",
+			"yaw" : "-1.69390"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1717574968518,
+			"stationName" : "-1A_middle",
+			"stationPos" : "middle",
+			"x" : "8.87555",
+			"y" : "-29.87106",
+			"yaw" : "-1.74055"
+		},
+		{
+			"deviceId" : "100133000000001",
+			"stationId" : 1717574990617,
+			"stationName" : "-1A_inside",
+			"stationPos" : "inside",
+			"x" : "8.65488",
+			"y" : "-31.34654",
+			"yaw" : "-1.73422"
+		}
+	]
+}

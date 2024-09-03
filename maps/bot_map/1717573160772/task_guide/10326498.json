@@ -1,0 +1,29 @@
+{
+	"cmdFunction" : 816,
+	"cmdSource" : "socket",
+	"cmdTime" : 0,
+	"mapId" : 1717573160772,
+	"mapName" : "MAP_-1A\u697c\u5730\u56fe_1717573160",
+	"msgId" : 103652768,
+	"taskData" : 
+	{
+		"stations" : 
+		[
+			{
+				"extra" : "",
+				"isWork" : 0,
+				"mapId" : 1717573160772,
+				"mapName" : "MAP_-1A\u697c\u5730\u56fe_1717573160",
+				"stationId" : 1717575671666,
+				"stationName" : "\u5ba2\u6237\u670d\u52a1\u4e2d\u5fc3\u95e8\u53e3",
+				"stationType" : 0,
+				"x" : 0.20630000000000001,
+				"y" : -8.5804500000000008,
+				"yaw" : -1.66147
+			}
+		]
+	},
+	"taskId" : 10326498,
+	"taskName" : "\u5ba2\u6237\u670d\u52a1\u4e2d\u5fc3\u95e8\u53e3",
+	"taskType" : 0
+}

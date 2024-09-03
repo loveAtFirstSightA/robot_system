@@ -1,0 +1,23 @@
+{
+	"mapId" : 1721110225254,
+	"mapName" : "MAP_20floor_1721110405",
+	"stations" : 
+	[
+		{
+			"deviceId" : "100133030000004",
+			"stationId" : 1721110762431,
+			"stationName" : "20floor_firedoor1",
+			"x" : "-5.50912",
+			"y" : "1.92687",
+			"yaw" : "1.67994"
+		},
+		{
+			"deviceId" : "100133030000004",
+			"stationId" : 1721110797341,
+			"stationName" : "20floor_firedoor2",
+			"x" : "-5.67197",
+			"y" : "3.90259",
+			"yaw" : "1.67053"
+		}
+	]
+}

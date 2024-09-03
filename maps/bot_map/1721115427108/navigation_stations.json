@@ -1,0 +1,35 @@
+{
+	"mapId" : 1721115427108,
+	"mapName" : "MAP_18floor_1721115607",
+	"stations" : 
+	[
+		{
+			"stationId" : 1721115892086,
+			"stationName" : "18floor_\u6253\u5370\u673a\u65c1\u8fb9",
+			"x" : "-8.98592",
+			"y" : "24.01417",
+			"yaw" : "-2.96739"
+		},
+		{
+			"stationId" : 1721116087215,
+			"stationName" : "18floor_\u4f1a\u8bae\u5ba4\u4e00",
+			"x" : "-22.11942",
+			"y" : "6.39968",
+			"yaw" : "-2.94404"
+		},
+		{
+			"stationId" : 1721121508533,
+			"stationName" : "18floor_\u91c7\u8d2d\u4e0e\u4f9b\u5e94\u94fe\u90e8\u95e8",
+			"x" : "-22.99258",
+			"y" : "21.77633",
+			"yaw" : "-2.96189"
+		},
+		{
+			"stationId" : 1722433269239,
+			"stationName" : "18floor_UED\u5904",
+			"x" : "-6.11725",
+			"y" : "5.42418",
+			"yaw" : "1.73160"
+		}
+	]
+}
