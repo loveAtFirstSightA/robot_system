@@ -17,13 +17,10 @@
 #include <memory>
 #include <string>
 #include <cmath>
-#include <iostream>
 #include <chrono>
-#include <ctime>
-#include <iomanip>
 #include "data_recorder/data_recorder.hpp"
 #include "tf2/utils.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
 
 namespace data_recorder
 {
@@ -93,12 +90,26 @@ void DataRecorder::odom_sub_callback(const nav_msgs::msg::Odometry::SharedPtr ms
     //     imu_data_.linear_acceleration.x, imu_data_.linear_acceleration.y, imu_data_.linear_acceleration.z,
     //     imu_data_.angular_velocity.x, imu_data_.angular_velocity.y, imu_data_.angular_velocity.z,
     //     tf2::getYaw(imu_data_.orientation));
+
+#define VELOCITY_MODE true
+
+#if !VELOCITY_MODE
     // simple
     spdlog::info("odom: [x {:.4f}, y {:.4f}, yaw {:.4f}] vel: [v {:.4f}, w {:.4f}] estimate: [x {:.4f}, y {:.4f}, yaw {:.4f}] encoder: [x {:.4f}, y {:.4f}, yaw {:.4f}]",
         odom_pose_.pose.pose.position.x, odom_pose_.pose.pose.position.y, tf2::getYaw(odom_pose_.pose.pose.orientation),
         vel_.linear.x, vel_.angular.z,
         tf_pose_.x, tf_pose_.y, tf_pose_.z,
         odom_data_pose_.pose.pose.position.x, odom_data_pose_.pose.pose.position.y, tf2::getYaw(odom_data_pose_.pose.pose.orientation));
+#elif VELOCITY_MODE
+    // info v = 0 w != 0
+    if (vel_.linear.x == 0) {
+        spdlog::info("odom: [x {:.4f}, y {:.4f}, yaw {:.4f}] vel: [v {:.4f}, w {:.4f}] estimate: [x {:.4f}, y {:.4f}, yaw {:.4f}] encoder: [x {:.4f}, y {:.4f}, yaw {:.4f}]",
+            odom_pose_.pose.pose.position.x, odom_pose_.pose.pose.position.y, tf2::getYaw(odom_pose_.pose.pose.orientation),
+            vel_.linear.x, vel_.angular.z,
+            tf_pose_.x, tf_pose_.y, tf_pose_.z,
+            odom_data_pose_.pose.pose.position.x, odom_data_pose_.pose.pose.position.y, tf2::getYaw(odom_data_pose_.pose.pose.orientation));
+    }
+#endif
 }
 
 void DataRecorder::odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg)

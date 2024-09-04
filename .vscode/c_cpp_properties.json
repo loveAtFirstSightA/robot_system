@@ -27,6 +27,7 @@
         "/home/lio/project_repository/robot_system/src/library/ros2_laser_scan_matcher/include/**",
         "/home/lio/project_repository/robot_system/src/nav2_amcl/include/**",
         "/home/lio/project_repository/robot_system/src/tools/data_recorder/include/**",
+        "/home/lio/project_repository/robot_system/src/tools/nav_to_pose/include/**",
         "/home/lio/project_repository/robot_system/src/tools/robot_teleop/include/**",
         "/home/lio/project_repository/robot_system/src/tools/switch_map_unit_test/include/**",
         "/usr/include/**"
