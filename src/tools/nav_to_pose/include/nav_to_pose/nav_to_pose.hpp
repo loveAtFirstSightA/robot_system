@@ -61,7 +61,6 @@ private:
         arrived_ = !arrived_;  // 切换到下一个点
     }
     void sendGoal(double x, double y, double yaw);
-    
     using ClientGoalHandle = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
     void goal_response_callback(const ClientGoalHandle::SharedPtr & future)
     {
