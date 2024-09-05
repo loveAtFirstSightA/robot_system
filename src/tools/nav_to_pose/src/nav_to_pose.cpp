@@ -20,14 +20,18 @@ namespace nav_to_pose
 {
 NavToPose::NavToPose() : Node("nav_to_pose"),
 arrived_(false),
-x1_(6.96737f), y1_(-15.09466f), yaw1_(0.04193f),  // 第一个目标点
-x2_(7.1498f), y2_(-2.5076f), yaw2_(0.0415f)   // 第二个目标点
+// x1_(6.96737f), y1_(-15.09466f), yaw1_(0.04193f),  // 第一个目标点
+// x2_(7.1498f), y2_(-2.5076f), yaw2_(0.0415f)   // 第二个目标点
+x1_(-6.0f), y1_(6.0f), yaw1_(0.0f),  // 第一个目标点
+x2_(2.0f), y2_(2.0f), yaw2_(0.0f)   // 第二个目标点
 {
      timer_ = this->create_wall_timer(
           std::chrono::seconds(5),
           std::bind(&NavToPose::timerCallback, this));
      nav_to_pose_action_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
           this, "/navigate_to_pose");
+     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
 NavToPose::~NavToPose() 
@@ -63,8 +67,6 @@ void NavToPose::sendGoal(double x, double y, double yaw)
           std::bind(&NavToPose::result_callback, this, std::placeholders::_1);
      RCLCPP_INFO(this->get_logger(), "Sending goal");
      nav_to_pose_action_client_->async_send_goal(goal, send_goal_options);
-
 }
-
 
 }  // namespace nav_to_pose

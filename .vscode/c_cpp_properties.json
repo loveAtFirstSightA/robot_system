@@ -6,7 +6,6 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
-        "${workspaceFolder}/**",
         "/opt/ros/humble/include/**",
         "/home/lio/project_repository/robot_system/src/HB/fcbox_msgs/fcbox_msgs_test/include/**",
         "/home/lio/project_repository/robot_system/src/algorithm/Localization/particle_filter/include/**",
