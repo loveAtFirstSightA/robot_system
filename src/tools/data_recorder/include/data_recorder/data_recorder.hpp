@@ -20,7 +20,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/vector3_stamped.hpp"
+#include "geometry_msgs/msg/vector3.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
@@ -37,25 +37,27 @@ public:
     ~DataRecorder();
 
 private:
-    void timer_callback();
+    bool getCurrentPose(geometry_msgs::msg::Vector3 & pose);
+    // void timer_callback();
     void odom_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
-    void odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
-    void imu_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
-    void imu_data_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
+    // void odom_data_sub_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
+    // void imu_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
+    // void imu_data_sub_callback(const sensor_msgs::msg::Imu::SharedPtr msg);
     void vel_sub_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
     
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     nav_msgs::msg::Odometry odom_pose_;
-    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_data_sub_;
-    nav_msgs::msg::Odometry odom_data_pose_;
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
-    sensor_msgs::msg::Imu imu_;
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_data_sub_;
-    sensor_msgs::msg::Imu imu_data_;
+    // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_data_sub_;
+    // nav_msgs::msg::Odometry odom_data_pose_;
+    // rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+    // sensor_msgs::msg::Imu imu_;
+    // rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_data_sub_;
+    // sensor_msgs::msg::Imu imu_data_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
     geometry_msgs::msg::Twist vel_;
 
-    rclcpp::TimerBase::SharedPtr timer_;
+    // rclcpp::TimerBase::SharedPtr timer_;
+    geometry_msgs::msg::Vector3 pose_;
 
 private:
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -63,7 +65,6 @@ private:
     // std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     geometry_msgs::msg::Vector3 tf_pose_;
 
-    bool localization_{false};
 };
 }  // namespace data_recorder
 #endif  // DATA_RECORDER__DATA_RECORDER_HPP_
