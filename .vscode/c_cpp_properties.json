@@ -1,41 +1,17 @@
 {
-  "configurations": [
-    {
-      "browse": {
-        "databaseFilename": "${default}",
-        "limitSymbolsToIncludedHeaders": false
-      },
-      "includePath": [
-        "/opt/ros/humble/include/**",
-        "/home/lio/project_repository/robot_system/nav2_amcl/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/Localization/particle_filter/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/Path/path_tool/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/PathTracking/model_predict_control/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/PathTracking/pure_pursuit/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/PathTracking/stanley_controller/include/**",
-        "/home/lio/project_repository/robot_system/src/algorithm/SLAM/iterative_closest_point/include/**",
-        "/home/lio/project_repository/robot_system/src/demo_unit/odometry_covariance/include/**",
-        "/home/lio/project_repository/robot_system/src/demo_unit/spdlog_demo/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_conver_pcl/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_feature_detection/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_iterative_closest_point/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_laser_scan/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_pl_icp/include/**",
-        "/home/lio/project_repository/robot_system/src/laser/robot_plicp_odom/include/**",
-        "/home/lio/project_repository/robot_system/src/library/csm/include/**",
-        "/home/lio/project_repository/robot_system/src/library/ros2_laser_scan_matcher/include/**",
-        "/home/lio/project_repository/robot_system/src/tools/data_recorder/include/**",
-        "/home/lio/project_repository/robot_system/src/tools/nav_to_pose/include/**",
-        "/home/lio/project_repository/robot_system/src/tools/robot_teleop/include/**",
-        "/home/lio/project_repository/robot_system/src/tools/switch_map_unit_test/include/**",
-        "/usr/include/**"
-      ],
-      "name": "ROS",
-      "intelliSenseMode": "gcc-x64",
-      "compilerPath": "/usr/bin/gcc",
-      "cStandard": "c99",
-      "cppStandard": "c++17"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/ros/humble/include/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang-14",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
 }
