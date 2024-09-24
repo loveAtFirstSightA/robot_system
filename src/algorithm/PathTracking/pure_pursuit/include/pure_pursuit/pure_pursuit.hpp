@@ -22,7 +22,6 @@
 #include <chrono>
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
-#include "pure_pursuit/logger.hpp"
 #include "pure_pursuit/common.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"

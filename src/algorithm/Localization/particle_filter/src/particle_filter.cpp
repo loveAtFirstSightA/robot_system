@@ -42,7 +42,7 @@ void ParticleFilter::initParticleFilter()
      pf_set.resize(50);
      for (size_t i = 0; i < pf_set.size(); i++)
      {
-          std::cout << getCurrentTime() << "x " << pf_set[i].pose.x << std::endl;
+          // 
      }
      
 }
@@ -56,13 +56,13 @@ void ParticleFilter::mapSubCallback(const nav_msgs::msg::OccupancyGrid::SharedPt
 void ParticleFilter::scanSubCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
      if (!map_received_) {
-          std::cout << getCurrentTime() << "No map reveiced" << std::endl;
+          // 
           return;
      }
      pf_pose odom, last_odom;
      // 获取里程计信息
      if (!getOdom(odom.x, odom.y, odom.yaw)) {
-          std::cout << getCurrentTime() << "No odometry reveiced" << std::endl;
+          // 
           return;
      }
 
@@ -74,7 +74,7 @@ bool ParticleFilter::getOdom(double & x, double & y, double & yaw)
      try {
           tf_pose = tf_buffer_->lookupTransform("base_footprint", "odom", tf2::TimePointZero);
      } catch(const std::exception& e) {
-          std::cerr << getCurrentTime() << e.what() << '\n';
+          // 
           return false;
      }
      x = tf_pose.transform.translation.x;

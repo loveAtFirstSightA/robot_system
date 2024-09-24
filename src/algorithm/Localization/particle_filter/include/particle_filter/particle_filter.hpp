@@ -19,8 +19,6 @@
 
 #include <math.h>
 #include "rclcpp/rclcpp.hpp"
-#include "particle_filter/logger.hpp"
-// #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"

@@ -22,7 +22,6 @@
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "algorithm_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "model_predict_control/logger.hpp"
 #include "model_predict_control/common.hpp"
 
 #include "tf2/utils.h"

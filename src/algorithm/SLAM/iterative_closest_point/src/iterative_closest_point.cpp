@@ -18,7 +18,6 @@
 #include <ctime>
 #include <iomanip>
 #include "iterative_closest_point/iterative_closest_point.hpp"
-#include "iterative_closest_point/logger.hpp"
 
 namespace iterative_closest_point
 {
@@ -40,10 +39,9 @@ ICP::converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
      double resolution = static_cast<double>(map->info.resolution);
      double origin_x = map->info.origin.position.x;
      double origin_y = map->info.origin.position.y;
-     std::cout << getCurrentTime() << "map: " << width << " * " << height << " " << resolution << " [" << origin_x << " ," << origin_y << "]" << std::endl;
+
      // map data_status occ - 100 unknown - -1 free - 0
      // 栅格地图的info原点是相对于哪里的？
-     std::cout << getCurrentTime() << "开始转换地图数据" << std::endl;
      // 障碍点个数
      unsigned int sum_occ = 0;
      std::vector<double> occ_x;
@@ -51,7 +49,6 @@ ICP::converMapToPcl(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
      occ_x.clear();
      occ_y.clear();
      for (size_t i = 0; i < map->data.size(); i++) {
-          // std::cout << getCurrentTime() << i << ": " << static_cast<int>(map->data[i]) << std::endl;
           if (map->data[i] == 100) {
                sum_occ ++;
                // 提取地图坐标下每个障碍点的位置

@@ -281,7 +281,6 @@ bool ModelPredictControl::getCurrentPose(double & x, double & y, double & yaw)
 void ModelPredictControl::timerCallback()
 {
      if (!is_path_received_) {
-          std::cout << getCurrentTime() << "path is empty, return" << std::endl;
           sendVelocity(0.0f, 0.0f);
           return;
      }
@@ -313,8 +312,6 @@ void ModelPredictControl::timerCallback()
           if (path_number >= path_.segments.size()) {
                path_number = 0;
           }
-          std::cout << getCurrentTime() << "Tracking path number: " << path_number
-               << " type: " << path_.segments[path_number].type << std::endl;
      }
 
      // 计算距离路径最近的点

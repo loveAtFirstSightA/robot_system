@@ -20,7 +20,6 @@
 #include <string>
 #include <cstdint>  // for uint8_t
 #include "stanley_controller/stanley_controller.hpp"
-#include "stanley_controller/logger.hpp"
 #include "stanley_controller/common.hpp"
 
 namespace stanley_controller
@@ -52,8 +51,6 @@ void StanleyController::updateParameters()
      this->declare_parameter<double>("k", 0.4f);
 
      k_ = this->get_parameter("k").get_value<double>();
-     std::cout << getCurrentTime() << "Parameters: " << std::endl;
-     std::cout << getCurrentTime() << "  k: " << k_ << std::endl;
 }
 
 void StanleyController::initFirstValue()
@@ -119,7 +116,6 @@ bool StanleyController::getCurrentPose(double & x, double & y, double & yaw)
 void StanleyController::timerCallback()
 {
      if (!is_path_received_) {
-          std::cout << getCurrentTime() << "Path is empty, return" << std::endl;
           sendVelocity(0.0f, 0.0f);
           return;
      }
@@ -150,8 +146,6 @@ void StanleyController::timerCallback()
           if (path_number >= path_.segments.size()) {
                path_number = 0;
           }
-          std::cout << getCurrentTime() << "Tracking path number: " << path_number << " type: " 
-               << std::to_string(static_cast<int>(path_.segments[path_number].type)) << std::endl;
      }
      // Step 1 假设交叉航迹误差为零，计算航向偏差角度
      // Step 1.1 计算路径的航向角 三种类型的路径
@@ -163,12 +157,10 @@ void StanleyController::timerCallback()
      } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
           calculatePathHeadingOnBezier5(path_heading, current, path_.segments[path_number].bezier5);
      }
-     std::cout << getCurrentTime() << "Path: " << path_number << ", path_heading: " << path_heading << ", current yaw: " << current.yaw << std::endl;
      // Step 1.2 计算航向偏差
      double theta_varphi = path_heading - current.yaw;
      // 角度标准化
      theta_varphi = normalizeAngle(theta_varphi);
-     std::cout << getCurrentTime() << "Path: " << path_number << ", theta_varphi: " << theta_varphi << std::endl;
 
      // Step 2 假设航向偏差为零， 计算矫正交叉航迹航迹偏差的航向偏差角度
      // Step 2.1 计算横向偏差
@@ -181,7 +173,6 @@ void StanleyController::timerCallback()
      } else if (path_.segments[path_number].type == path_.segments[path_number].BEZIER5) {
           calculateClosestPointOnBezier5(closest, current, path_.segments[path_number].bezier5);
      }
-     std::cout << getCurrentTime() << "Path: " << path_number << ", closest: [" << closest.x << ", " << closest.y << "]" << std::endl;
      // 计算路径最近点与当前点的欧氏距离
      double shortest_distance = std::sqrt(std::pow((closest.x - current.x), 2) + std::pow((closest.y - current.y), 2));
      // 确定横向偏差是在路劲的左侧还是右侧 右手坐标系 偏差在路径左侧为正 偏差在路径右侧为负
@@ -189,15 +180,12 @@ void StanleyController::timerCallback()
      double signed_shortest_distance = shortest_distance * lateral_error_sign;
      // Step 2.2 根据速度v和参数k确定d_t
      double theta_y = std::atan2(signed_shortest_distance, v_ / k_);
-     std::cout << getCurrentTime() << "Path: " << path_number << ", shortest_distance: " << shortest_distance << ", theta_y: " << theta_y << std::endl;
      // Step 2.3 计算转角 theta
      double theta = theta_varphi + theta_y;
      theta = normalizeAngle(theta);
-     std::cout << getCurrentTime() << "Path: " << path_number << ", theta: " << theta << std::endl;
      // 角度偏差转换成角速度目标值
      // w_ = v_ * std::tan(theta) / 0.5f;
      w_ = theta / 0.25f;
-     std::cout << getCurrentTime() << "Path: " << path_number << ", w_: " << w_ << std::endl;
      // send velocity
      sendVelocity(v_, w_);
 

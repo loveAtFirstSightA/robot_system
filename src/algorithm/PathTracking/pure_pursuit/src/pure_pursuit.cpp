@@ -20,7 +20,6 @@
 
 #include <chrono>
 #include <cmath>
-#include "pure_pursuit/logger.hpp"
 #include "pure_pursuit/pure_pursuit.hpp"
 
 namespace pure_pursuit
@@ -60,12 +59,6 @@ void PurePursuit::initParam()
      k_ = this->get_parameter("k").get_value<double>();
      max_v_ = this->get_parameter("max_v").get_value<double>();
      max_w_ = this->get_parameter("max_w").get_value<double>();
-
-     std::cout << getCurrentTime() << "Parameter:" << std::endl;
-     std::cout << getCurrentTime() << "    lookaheaddist: " << lookaheaddist_ << std::endl;
-     std::cout << getCurrentTime() << "    k: " << k_ << std::endl;
-     std::cout << getCurrentTime() << "    max_v: " << max_v_ << std::endl;
-     std::cout << getCurrentTime() << "    max_w: " << max_w_ << std::endl;
 }
 
 void PurePursuit::initFirstValue()
@@ -93,7 +86,6 @@ bool PurePursuit::getCurrentPose(double & x, double & y, double & yaw)
 void PurePursuit::timerCallback()
 {
      if (!is_path_received_) {
-          std::cout << getCurrentTime() << "path is empty, return" << std::endl;
           sendVelocity(0.0f, 0.0f);
           return;
      }
@@ -123,8 +115,6 @@ void PurePursuit::timerCallback()
           if (path_number >= path_.segments.size()) {
                path_number = 0;
           }
-          std::cout << getCurrentTime() << "Tracking path number: " << path_number
-               << " type: " << path_.segments[path_number].type << std::endl;
      }
 
      // 前视距离
@@ -151,7 +141,6 @@ void PurePursuit::timerCallback()
      double ld_theta = std::atan2(ld_vy, ld_vx);
      double alpha  = ld_theta - current.yaw;
      alpha = normalizeAngle(alpha);
-     std::cout << getCurrentTime() << "alpha  = ld_theta - current.yaw " << alpha << " = " << ld_theta << " - " << current.yaw << std::endl;
 
      // Step 3 差速类型的模型计算旋转半径R
      double r = lookaheaddistance / (2.0f * std::sin(alpha));
@@ -172,7 +161,6 @@ void PurePursuit::timerCallback()
      //      w_ = 0.0f;
      //      v_ = 0.0f;
      // }
-     std::cout << getCurrentTime() << "v: " << v_ << ", w: " << w_ << ", r: " << r << std::endl;
      sendVelocity(v_, w_);
 
      std::cout << std::endl;
@@ -245,10 +233,6 @@ void PurePursuit::calculateTargetOnLine(Pose & target, const double lookahead, c
      // Step 3 当前点到直线的最近的点 + 前视距离 * 单位向量
      target.x = closest.x + lookahead * unit_vector_line.vx;
      target.y = closest.y + lookahead * unit_vector_line.vy;
-
-     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
-          << " target: [x " << target.x << ", y " << target.y << "]"
-          << " closest: [x " << closest.x << ", y " << closest.y << "]" << std::endl;
 }
 
 void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead, const Pose & current, const algorithm_msgs::msg::Bezier3 bezier3) 
@@ -289,9 +273,6 @@ void PurePursuit::calculateTargetOnBezier3(Pose & target, const double lookahead
                closestPoint = pointOnBezier;
           }
      }
-     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
-          << " target: [x " << target.x << ", y " << target.y << "]"
-          << " closest: [x " << closestPoint.x << ", y " << closestPoint.y << "]" << std::endl;
      target = closestPoint;
 }
 
@@ -339,9 +320,6 @@ void PurePursuit::calculateTargetOnBezier5(Pose & target, const double lookahead
                closestPoint = pointOnBezier;
           }
      }
-     std::cout << getCurrentTime() << "Current: [x " << current.x << ", y " << current.y << "]"
-          << " target: [x " << target.x << ", y " << target.y << "]"
-          << " closest: [x " << closestPoint.x << ", y " << closestPoint.y << "]" << std::endl;
      target = closestPoint;
 }
 
