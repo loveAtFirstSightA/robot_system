@@ -38,7 +38,7 @@ SwitchMapUnitTest::SwitchMapUnitTest() : Node("switch_map_unit_test")
 
 SwitchMapUnitTest::~SwitchMapUnitTest() {}
 
-// void SwitchMapUnitTest::timerCallback()
+// void SwitchMapUnitTest::Kw()
 // {
 //      // debug
 //      return;

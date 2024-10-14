@@ -23,6 +23,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "tf2/utils.h"
+#include "tf2/time.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -46,19 +47,15 @@ private:
             RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
             return;
         }
-
         // 停止定时器，避免重复发送任务
         timer_->cancel();
-
-        if (arrived_) {
+        if (task_count_ % 2 == 0) {
             RCLCPP_INFO(this->get_logger(), "Task %d: Navigating to Point 2 [x %.4f, y %.4f, yaw %.4f]", task_count_, x2_, y2_, yaw2_);
             sendGoal(x2_, y2_, yaw2_);
         } else {
             RCLCPP_INFO(this->get_logger(), "Task %d: Navigating to Point 1 [x %.4f, y %.4f, yaw %.4f]", task_count_, x1_, y1_, yaw1_);
             sendGoal(x1_, y1_, yaw1_);
         }
-
-        arrived_ = !arrived_;  // 切换到下一个点
     }
     void sendGoal(double x, double y, double yaw);
     using ClientGoalHandle = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
@@ -76,7 +73,7 @@ private:
         ClientGoalHandle::SharedPtr,
         const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback)
     {
-        RCLCPP_DEBUG(this->get_logger(), "Received feedback");
+        RCLCPP_DEBUG(this->get_logger(), "Received feedback distance_remaining: %f", feedback->distance_remaining);
     }
     
     void result_callback(const ClientGoalHandle::WrappedResult & result)
@@ -89,7 +86,7 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Server successfully executed goal");
                 while (!getCurrentPose(x, y, yaw)) {
                 }
-                RCLCPP_INFO(this->get_logger(), "Arrived current pose: [x %.4f, y %.4f, yaw %.4f]", x, y, yaw);
+                RCLCPP_INFO(this->get_logger(), "Arrived current pose: [x %.4f, y %.4f, yaw %.4f]\n", x, y, yaw);
             } break;
             case rclcpp_action::ResultCode::ABORTED:
                 RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
@@ -132,9 +129,6 @@ private:
     double x2_;
     double y2_;
     double yaw2_;
-
-    bool arrived_;
-
     int task_count_{0};
 
 };
