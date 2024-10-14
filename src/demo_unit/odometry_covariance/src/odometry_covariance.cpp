@@ -77,6 +77,7 @@ void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPt
     }
     twist_cov << "]";
     spdlog::info("{}", twist_cov.str());
+    spdlog::info("\n");
 }
 
 /*
