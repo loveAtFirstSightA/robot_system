@@ -31,6 +31,7 @@ OdometryCovariance::~OdometryCovariance() {}
 
 void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
+    spdlog::info("\n");
     // Store odometry information
     odom_ = *msg;
     // Log odometry information
@@ -77,7 +78,6 @@ void OdometryCovariance::odomSubCallback(const nav_msgs::msg::Odometry::SharedPt
     }
     twist_cov << "]";
     spdlog::info("{}", twist_cov.str());
-    spdlog::info("\n");
 }
 
 /*

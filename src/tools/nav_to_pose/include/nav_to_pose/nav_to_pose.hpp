@@ -40,7 +40,7 @@ private:
     void timerCallback()
     {
         task_count_ = task_count_ + 1;
-        if (task_count_ > 2000) {
+        if (task_count_ > 10000) {
             return;
         }
         if (!nav_to_pose_action_client_->wait_for_action_server(std::chrono::seconds(5))) {

@@ -108,11 +108,11 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-install(DIRECTORY launch
+install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY config
+install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 

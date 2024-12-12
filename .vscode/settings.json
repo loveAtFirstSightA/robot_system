@@ -7,6 +7,7 @@
         "regex": "cpp",
         "functional": "cpp",
         "tuple": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "iosfwd": "cpp"
     }
 }

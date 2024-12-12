@@ -73,11 +73,11 @@ void DataRecorder::odom_sub_callback(const nav_msgs::msg::Odometry::SharedPtr ms
     this->odom_pose_ = *msg;
 
     geometry_msgs::msg::Vector3 pose;
-    if (getCurrentPose(pose)) {
+    if (!getCurrentPose(pose)) {
         spdlog::info("odom: [x {:.4f}, y {:.4f}, yaw {:.4f}] estimate: [x {:.4f}, y {:.4f}, yaw {:.4f}], vel: [v {:.4f}, w {:.4f}]",
-        odom_pose_.pose.pose.position.x, odom_pose_.pose.pose.position.y, tf2::getYaw(odom_pose_.pose.pose.orientation),
-        pose.x, pose.y, pose.z,
-        vel_.linear.x, vel_.angular.z);
+            odom_pose_.pose.pose.position.x, odom_pose_.pose.pose.position.y, tf2::getYaw(odom_pose_.pose.pose.orientation),
+            pose.x, pose.y, pose.z,
+            vel_.linear.x, vel_.angular.z);
     }
 
 // #define VELOCITY_MODE true

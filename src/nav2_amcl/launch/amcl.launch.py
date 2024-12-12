@@ -1,7 +1,7 @@
-#!/usr/bin/python3
+#!/usr/bin python3
 # -*- coding: UTF-8 -*-
 
-# startup the robot localization of amcl
+# startup localization of amcl
 
 import os
 
@@ -16,19 +16,28 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        Node(
-            package='nav2_lifecycle_manager',
-            executable='lifecycle_manager',
-            name='lifecycle_manager_localization',
-            parameters=[{'autostart': True},
-                        {'node_names': ['amcl']}],
-            output='screen'),
-        
+        DeclareLaunchArgument(
+            'params_file',
+            default_value=os.path.join(
+                get_package_share_directory('nav2_amcl'),
+                'config', 'params.yaml'
+            ),
+            description='Full path to the AMCL parameter file to use'),
+
         Node(
             package='nav2_amcl',
             executable='amcl',
             name='amcl',
-            parameters=[os.path.join(get_package_share_directory('nav2_amcl'),
-                'config', 'params.yaml')],
+            # parameters=[os.path.join(get_package_share_directory('nav2_amcl'),
+            #     'config', 'params.yaml')],
+            parameters=[LaunchConfiguration('params_file')],
+            output='screen'),
+
+        Node(
+            package='nav2_lifecycle_manager',
+            executable='lifecycle_manager',
+            name='lifecycle_manager_localization',
+            parameters=[{'autostart': False},
+                        {'node_names': ['amcl']}],
             output='screen')
     ])
